@@ -25,7 +25,7 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#include "TsetlinMachineVariant.h"
+#include "TsetlinMachine.h"
 
 #define CLASSES 2
 
