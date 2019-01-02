@@ -73,7 +73,7 @@ float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], 
 
 		max_class_sum = tm_score(mc_tm->tsetlin_machines[0], X[l]);
 		max_class = 0;
-		for (int i = 1; i < CLASSES; i++) {	
+		for (int i = 1; i < CLASSES; i++) {
 			int class_sum = tm_score(mc_tm->tsetlin_machines[i], X[l]);
 			if (max_class_sum < class_sum) {
 				max_class_sum = class_sum;
@@ -85,7 +85,7 @@ float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], 
 			errors += 1;
 		}
 	}
-	
+
 	return 1.0 - 1.0 * errors / number_of_examples;
 }
 
@@ -100,7 +100,7 @@ void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_c
 {
 	tm_update(mc_tm->tsetlin_machines[target_class], Xi, 1, s);
 
-	// Randomly pick one of the other classes, for pairwise learning of class output 
+	// Randomly pick one of the other classes, for pairwise learning of class output
 	int negative_target_class = (int)CLASSES * 1.0*rand()/RAND_MAX;
 	while (negative_target_class == target_class) {
 		negative_target_class = (int)CLASSES * 1.0*rand()/RAND_MAX;
@@ -116,7 +116,7 @@ void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_c
 void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples, int epochs, float s)
 {
 	for (int epoch = 0; epoch < epochs; epoch++) {
-		// Add shuffling here...		
+		// Add shuffling here...
 		for (int i = 0; i < number_of_examples; i++) {
 			mc_tm_update(mc_tm, X[i], y[i], s);
 		}

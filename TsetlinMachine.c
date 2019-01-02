@@ -50,15 +50,15 @@ struct TsetlinMachine *CreateTsetlinMachine()
 void tm_initialize(struct TsetlinMachine *tm)
 {
 	for (int j = 0; j < CLAUSES; j++) {
-		TsetlinMachineClauses_t *clauses = &tm->ta_state[j];
+		TsetlinMachineFeatures_t *clauses = tm->ta_state[j];
 		for (int k = 0; k < FEATURES; k++) {
-			TsetlinMachineFeatures_t *features = clauses[k];
+			int *features = clauses[k];
 			if (1.0 * rand()/RAND_MAX <= 0.5) {
-				*features[0] = NUMBER_OF_STATES;
-				*features[1] = NUMBER_OF_STATES + 1;
+				features[0] = NUMBER_OF_STATES;
+				features[1] = NUMBER_OF_STATES + 1;
 			} else {
-				*features[0] = NUMBER_OF_STATES + 1;
-				*features[1] = NUMBER_OF_STATES; // Deviation, should be random
+				features[0] = NUMBER_OF_STATES + 1;
+				features[1] = NUMBER_OF_STATES; // Deviation, should be random
 			}
 		}
 	}
@@ -82,11 +82,11 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 	for (j = 0; j < CLAUSES; j++) {
 		tm->clause_output[j] = 1;
 		all_exclude = 1;
-		TsetlinMachineClauses_t *clauses = &tm->ta_state[j];
+		TsetlinMachineFeatures_t *clauses = tm->ta_state[j];
 		for (k = 0; k < FEATURES; k++) {
-			TsetlinMachineFeatures_t *features = clauses[k];
-			action_include = action(*features[0]);
-			action_include_negated = action(*features[1]);
+			int *features = clauses[k];
+			action_include = action(features[0]);
+			action_include_negated = action(features[1]);
 
 			all_exclude = all_exclude && !(action_include == 1 || action_include_negated == 1);
 
