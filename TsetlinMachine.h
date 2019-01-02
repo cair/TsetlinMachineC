@@ -34,8 +34,13 @@ https://arxiv.org/abs/1804.01508
 #define PREDICT 1
 #define UPDATE 0
 
-struct TsetlinMachine { 
-	int ta_state[CLAUSES][FEATURES][2];
+typedef int TsetlinMachineFeatures_t[2];
+typedef TsetlinMachineFeatures_t TsetlinMachineClauses_t[FEATURES];
+typedef TsetlinMachineClauses_t TsetlinMachineState_t[CLAUSES];
+
+struct TsetlinMachine {
+    /*int ta_state[CLAUSES][FEATURES][2]*/
+	TsetlinMachineState_t ta_state;
 
 	int clause_output[CLAUSES];
 
