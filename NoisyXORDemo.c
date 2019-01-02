@@ -59,7 +59,7 @@ void read_file(void)
 
 
 int main(void)
-{	
+{
 	srand(time(NULL));
 
 	read_file();
