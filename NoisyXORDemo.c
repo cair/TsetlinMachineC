@@ -67,7 +67,7 @@ int main(void)
 	struct MultiClassTsetlinMachine *mc_tsetlin_machine = CreateMultiClassTsetlinMachine();
 
 	float average = 0.0;
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 100; i++) {
 		mc_tm_initialize(mc_tsetlin_machine);
 		clock_t start_total = clock();
 		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 200, 3.9);
