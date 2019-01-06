@@ -1,5 +1,7 @@
 # TsetlinMachineC
 
+A C implementation of the Tsetlin Machine (https://arxiv.org/abs/1804.01508).
+
 ## Noisy XOR Demo
 ```bash
 make
@@ -17,3 +19,4 @@ Average accuracy: 0.995000
 
 EPOCH 100 TIME: 1.982244
 Average accuracy: 0.999098
+```
