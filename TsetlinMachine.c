@@ -41,18 +41,8 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 	/* Set up the Tsetlin Machine structure */
 
-	for (int j = 0; j < CLAUSES; j++) {				
-		for (int k = 0; k < FEATURES; k++) {
-			if (1.0 * rand()/RAND_MAX <= 0.5) {
-				(*tm).ta_state[j][k][0] = NUMBER_OF_STATES;
-				(*tm).ta_state[j][k][1] = NUMBER_OF_STATES + 1;
-			} else {
-				(*tm).ta_state[j][k][0] = NUMBER_OF_STATES + 1;
-				(*tm).ta_state[j][k][1] = NUMBER_OF_STATES;
-			}
-		}
-	}
-
+	tm_initialize(tm);
+	
 	return tm;
 }
 
