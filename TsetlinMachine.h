@@ -25,11 +25,11 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 15
-#define FEATURES 12
-#define CLAUSES 10
+#define THRESHOLD 8
+#define FEATURES 6
+#define CLAUSES 2
 #define NUMBER_OF_STATES 256
-#define BOOST_TRUE_POSITIVE_FEEDBACK 0
+#define BOOST_TRUE_POSITIVE_FEEDBACK 1
 
 struct TsetlinMachine { 
 	int ta_state[CLAUSES][FEATURES];
