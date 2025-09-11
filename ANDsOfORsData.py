@@ -5,9 +5,9 @@ noise = 0.01
 
 number_of_variables = 2
 
-number_of_elements = 6
+number_of_elements = 20
 number_of_features = number_of_variables * number_of_elements
-number_of_examples = 20000
+number_of_examples = 100000
 
 X_train = np.zeros((number_of_examples, number_of_features), dtype=np.uint32)
 Y_train = np.empty(number_of_examples, dtype=np.uint32)
