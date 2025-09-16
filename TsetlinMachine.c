@@ -49,12 +49,14 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 void tm_initialize(struct TsetlinMachine *tm)
 {
-	for (int j = 0; j < CLAUSES; j++) {				
-		for (int k = 0; k < FEATURES; k++) {
-			if (1.0 * rand()/RAND_MAX <= 0.5) {
-				(*tm).ta_state[j][k] = NUMBER_OF_STATES;
-			} else {
-				(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
+	for (int v = 0; v < VARIABLES; v++) {
+		for (int j = 0; j < CLAUSES; j++) {				
+			for (int k = 0; k < FEATURES; k++) {
+				if (1.0 * rand()/RAND_MAX <= 0.5) {
+					(*tm).ta_state[v][j][k] = NUMBER_OF_STATES;
+				} else {
+					(*tm).ta_state[v][j][k] = NUMBER_OF_STATES + 1;
+				}
 			}
 		}
 	}
@@ -72,14 +74,21 @@ static inline int action(int state)
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 {
 	for (int j = 0; j < CLAUSES; j++) {
-		(*tm).clause_output[j] = 1;
-		for (int k = 0; k < FEATURES; k++) {
-			int action_include = action((*tm).ta_state[j][k]);
+		(*tm).joint_clause_output[j] = 1;
 
-			if ((action_include == 1) && (Xi[k] == 1)) {
-				(*tm).clause_output[j] = 0;
-				break;
+		for (int v = 0; v < VARIABLES; v++) {
+			(*tm).clause_output[v][j] = 1;
+
+			for (int k = 0; k < FEATURES; k++) {
+				int action_include = action((*tm).ta_state[v][j][k]);
+
+				if ((action_include == 1) && (Xi[v*FEATURES + k] == 1)) {
+					(*tm).clause_output[v][j] = 0;
+					break;
+				}
 			}
+
+			(*tm).joint_clause_output[j] = (*tm).joint_clause_output[j] && (*tm).clause_output[v][j];
 		}
 	}
 }
@@ -90,7 +99,7 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 	int class_sum = 0;
 	for (int j = 0; j < CLAUSES; j++) {
 		int sign = 1 - 2 * (j & 1);
-		class_sum += (*tm).clause_output[j]*sign;
+		class_sum += (*tm).joint_clause_output[j]*sign;
 	}
 	
 	class_sum = (class_sum > THRESHOLD) ? THRESHOLD : class_sum;
@@ -100,20 +109,20 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 }
 
 /* Get the state of a specific automaton, indexed by clause, feature, and automaton type (include/include negated). */
-int tm_get_state(struct TsetlinMachine *tm, int clause, int feature)
+int tm_get_state(struct TsetlinMachine *tm, int variable, int clause, int feature)
 {
-	return (*tm).ta_state[clause][feature];
+	return (*tm).ta_state[variable][clause][feature];
 }
 
 /*************************************************/
 /*** Type I Feedback (Combats False Negatives) ***/
 /*************************************************/
 
-static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s)
+static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int v, int j, float s)
 {
-	if ((*tm).clause_output[j] == 0)	{
+	if ((*tm).joint_clause_output[j] == 0)	{
 		for (int k = 0; k < FEATURES; k++) {
-			(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
@@ -124,12 +133,12 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		}
-	} else if ((*tm).clause_output[j] == 1) {					
+	} else if ((*tm).joint_clause_output[j] == 1) {	
 		for (int k = 0; k < FEATURES; k++) {
-			if (Xi[k] == 0) {
-				(*tm).ta_state[j][k] += ((*tm).ta_state[j][k] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+			if (Xi[v*FEATURES + k] == 0) {
+				(*tm).ta_state[v][j][k] += ((*tm).ta_state[v][j][k] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
-				(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
@@ -149,10 +158,10 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 /*** Type II Feedback (Combats False Positives) ***/
 /**************************************************/
 
-static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
-	if ((*tm).clause_output[j] == 1) {
+static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int v, int j) {
+	if ((*tm).joint_clause_output[j] == 1) {
 		for (int k = 0; k < FEATURES; k++) { 
-			(*tm).ta_state[j][k] += ((*tm).ta_state[j][k] < (NUMBER_OF_STATES + 1)) && (Xi[k] == 1);
+			(*tm).ta_state[v][j][k] += ((*tm).ta_state[v][j][k] < (NUMBER_OF_STATES + 1)) && (Xi[v*FEATURES + k] == 1);
 		}
 	}
 }
@@ -182,9 +191,11 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*************************************/
 
 	// Calculate feedback to clauses
+
 	for (int j = 0; j < CLAUSES; j++) {
 		(*tm).feedback_to_clauses[j] = (2*target-1)*(1 - 2 * (j & 1))*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
 	}
+	
 	
 	/*********************************/
 	/*** Train Individual Automata ***/
@@ -192,9 +203,13 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 
 	for (int j = 0; j < CLAUSES; j++) {
 		if ((*tm).feedback_to_clauses[j] > 0) {
-			type_i_feedback(tm, Xi, j, s);
+			for (int v = 0; v < VARIABLES; v++) {
+				type_i_feedback(tm, Xi, v, j, s);
+			}
 		} else if ((*tm).feedback_to_clauses[j] < 0) {
-			type_ii_feedback(tm, Xi, j);
+			for (int v = 0; v < VARIABLES; v++) {
+				type_ii_feedback(tm, Xi, v, j);
+			}
 		}
 	}
 }

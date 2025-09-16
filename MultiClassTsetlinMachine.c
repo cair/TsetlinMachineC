@@ -59,7 +59,7 @@ void mc_tm_initialize(struct MultiClassTsetlinMachine *mc_tm)
 /*** Evaluate the Trained Tsetlin Machine ***/
 /********************************************/
 
-float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples)
+float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][VARIABLES*FEATURES], int y[], int number_of_examples)
 {
 	int errors;
 	int max_class;
@@ -113,7 +113,7 @@ void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_c
 /*** Batch Mode Training of Tsetlin Machine ***/
 /**********************************************/
 
-void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples, int epochs, float s)
+void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][VARIABLES*FEATURES], int y[], int number_of_examples, int epochs, float s)
 {
 	for (int epoch = 0; epoch < epochs; epoch++) {
 		// Add shuffling here...		

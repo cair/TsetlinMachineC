@@ -26,15 +26,18 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 3
-#define FEATURES 40
+#define FEATURES 20
+#define VARIABLES 2
 #define CLAUSES 8
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSES][FEATURES];
+	int ta_state[VARIABLES][CLAUSES][FEATURES];
 
-	int clause_output[CLAUSES];
+	int clause_output[VARIABLES][CLAUSES];
+
+	int joint_clause_output[CLAUSES];
 
 	int feedback_to_clauses[CLAUSES];
 };
@@ -47,5 +50,5 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
-int tm_get_state(struct TsetlinMachine *tm, int clause, int feature);
+int tm_get_state(struct TsetlinMachine *tm, int variable, int clause, int feature);
 
