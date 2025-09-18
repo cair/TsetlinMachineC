@@ -123,15 +123,10 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int v, i
 	if ((*tm).joint_clause_output[j] == 0)	{
 		for (int k = 0; k < FEATURES; k++) {
 			(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-		// 	(*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		}
 	} else if ((*tm).joint_clause_output[j] == 1) {	
 		for (int k = 0; k < FEATURES; k++) {
@@ -139,15 +134,10 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int v, i
 				(*tm).ta_state[v][j][k] += ((*tm).ta_state[v][j][k] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
 				(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-				// (*tm).ta_state[j][k] -= ((*tm).ta_state[j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[v][j][k] -= ((*tm).ta_state[v][j][k] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
