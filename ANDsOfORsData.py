@@ -3,9 +3,9 @@ import numpy as np
 
 noise = 0.01
 
-number_of_variables = 2
+number_of_variables = 1
 
-number_of_elements = 20
+number_of_elements = 4
 number_of_features = number_of_variables * number_of_elements
 number_of_examples = 100000
 
