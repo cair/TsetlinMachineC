@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2019 Ole-Christoffer Granmo
+Copyright (c) 2025 Ole-Christoffer Granmo and the University of Agder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,35 @@ https://arxiv.org/abs/1804.01508
 
 */
 
+#define VALUES 10
+#define VARIABLES 2
+
+#define COMPONENTS_LVL_1 4
+#define COMPONENTS_LVL_2 2
+#define COMPONENTS_LVL_3 1
+
+#define BLOCKS_LVL_1 2
+#define BLOCKS_LVL_2 1
+#define	BLOCKS_LVL_3 1
+
+#define FEATURES_LVL_1 (VALUES * VARIABLES)
+#define FEATURES_LVL_2 COMPONENTS_LVL_1
+#define FEATURES_LVL_3 COMPONENTS_LVL_2
+
+#define FEATURES (FEATURES_LVL_1 + FEATURES_LVL_2 + FEATURES_LVL_3)
+
+#define FEATURES_PER_BLOCK_LVL_1 (FEATURES_LVL_1 / BLOCKS_LVL_1)
+#define FEATURES_PER_BLOCK_LVL_2 (FEATURES_LVL_2 / BLOCKS_LVL_2)
+#define FEATURES_PER_BLOCK_LVL_3 (FEATURES_LVL_3 / BLOCKS_LVL_3)
+
+#define COMPONENTS_PER_BLOCK_LVL_1 (COMPONENTS_LVL_1 / BLOCKS_LVL_1)
+#define COMPONENTS_PER_BLOCK_LVL_2 (COMPONENTS_LVL_2 / BLOCKS_LVL_2)
+#define COMPONENTS_PER_BLOCK_LVL_3 (COMPONENTS_LVL_3 / BLOCKS_LVL_3)
+
+#define COMPONENTS (COMPONENTS_LVL_1 + COMPONENTS_LVL_2 + COMPONENTS_LVL_3)
+
 #define THRESHOLD 15
-#define FEATURES 12
+#define FEATURES 10
 #define CLAUSES 10
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
@@ -35,8 +62,10 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSES][FEATURES][2];
+	int ta_state[CLAUSES][FEATURES];
 
+	int component_output[COMPONENTS];
+	
 	int clause_output[CLAUSES];
 
 	int feedback_to_clauses[CLAUSES];
