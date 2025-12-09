@@ -52,11 +52,9 @@ void tm_initialize(struct TsetlinMachine *tm)
 	for (int j = 0; j < CLAUSES; j++) {				
 		for (int k = 0; k < FEATURES; k++) {
 			if (1.0 * rand()/RAND_MAX <= 0.5) {
-				(*tm).ta_state[j][k][0] = NUMBER_OF_STATES;
-				(*tm).ta_state[j][k][1] = NUMBER_OF_STATES + 1; 
+				(*tm).ta_state[j][k] = NUMBER_OF_STATES;
 			} else {
-				(*tm).ta_state[j][k][0] = NUMBER_OF_STATES + 1;
-				(*tm).ta_state[j][k][1] = NUMBER_OF_STATES; // Deviation, should be random
+				(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
 			}
 		}
 	}
@@ -73,26 +71,51 @@ static inline int action(int state)
 
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
-	int j, k;
-	int action_include, action_include_negated;
-	int all_exclude;
-
-	for (j = 0; j < CLAUSES; j++) {
+	// Calculate the output of each clause
+	for (int j = 0; j < CLAUSES; j++) {
 		(*tm).clause_output[j] = 1;
-		all_exclude = 1;
-		for (k = 0; k < FEATURES; k++) {
-			action_include = action((*tm).ta_state[j][k][0]);
-			action_include_negated = action((*tm).ta_state[j][k][1]);
 
-			all_exclude = all_exclude && !(action_include == 1 || action_include_negated == 1);
+		int feature_index = 0; // Track the feature index
+		int component_index = 0; // Track the clause component index
+		int action_index = 0;
 
-			if ((action_include == 1 && Xi[k] == 0) || (action_include_negated == 1 && Xi[k] == 1)) {
-				(*tm).clause_output[j] = 0;
-				break;
+		// Traverse the hierarchy left-right, bottom-up, level by level.
+		for (int k = 0; k < LEVELS; k++) {
+			
+			// Traverse the blocks of the current level
+			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
+
+				// Traverse the clause components of each feature block
+				for (int m = 0; m < (*tm).components_per_block[k]; l++) {
+
+					(*tm).component_output[component_index] = 1;
+					
+					for (int n = 0; n < (*tm).features_per_block[k]; n++) {
+						int action_include = action((*tm).ta_state[j][action_index]);
+
+						if (action_include && (!Xi[feature_index + n])) {
+							(*tm).component_output[component_index] = 0;
+							break;
+						}
+					}
+
+					// Since each clause component is negated, the clause becomes false when the clause component is true.
+					if ((*tm).component_output[component_index]) {
+						(*tm).clause_output[j] = 0;
+					}
+
+					// Copy the component output into the feature vector...
+
+					Xi[feature_index + (*tm).features_per_block[k] + m]	= !(*tm).component_output[component_index];
+
+					action_index++;
+					component_index++;
+				}
+
+				// Skip to next block of features after all components have been evaluated on the present block
+				feature_index += (*tm).features_per_block[k];
 			}
 		}
-
-		(*tm).clause_output[j] = (*tm).clause_output[j] && !(predict == PREDICT && all_exclude == 1);
 	}
 }
 
@@ -197,6 +220,8 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*** Train Individual Automata ***/
 	/*********************************/
 
+	int positive_polarity = 1 - (LEVELS % 2);
+
 	for (int j = 0; j < CLAUSES; j++) {
 		if ((*tm).feedback_to_clauses[j] > 0) {
 			type_i_feedback(tm, Xi, j, s);
@@ -204,6 +229,8 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 			type_ii_feedback(tm, Xi, j);
 		}
 	}
+
+	positive_polarity = !positive_polarity;
 }
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]) {
