@@ -73,7 +73,6 @@ This code implements the Hierarchical Tsetlin Machine
 #define THRESHOLD 15
 #define CLAUSES 10
 #define NUMBER_OF_STATES 100
-#define BOOST_TRUE_POSITIVE_FEEDBACK 0
 
 // Strategy
 // Evaluate clause components from left to right, the last one becomes the clause output, use moving window...
