@@ -78,9 +78,11 @@ This code implements the Hierarchical Tsetlin Machine
 // Evaluate clause components from left to right, the last one becomes the clause output, use moving window...
 
 struct TsetlinMachine { 
-	int blocks_per_level[] = {BLOCKS_LVL_1, BLOCKS_LVL_2, BLOCKS_LVL_3};
-	int features_per_block[] = {FEATURES_PER_BLOCK_LVL_1, FEATURES_PER_BLOCK_LVL_2, FEATURES_PER_BLOCK_LVL_3};
-	int components_per_block[] = {COMPONENTS_PER_BLOCK_LVL_1, COMPONENTS_PER_BLOCK_LVL_2, COMPONENTS_PER_BLOCK_LVL_3};
+	int blocks_per_level[LEVELS];
+	
+	int features_per_block[LEVELS];
+	
+	int components_per_block[LEVELS];
 
 	int ta_state[CLAUSES][FEATURES];
 
@@ -101,5 +103,5 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
-int tm_get_state(struct TsetlinMachine *tm, int clause, int feature, int automaton_type);
+int tm_get_state(struct TsetlinMachine *tm, int clause, int feature);
 
