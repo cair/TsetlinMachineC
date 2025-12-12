@@ -18,7 +18,7 @@ for i in range(number_of_examples):
 		Y_train[i] = 1
 
 Y_train = np.where(np.random.rand(number_of_examples) <= noise, 1-Y_train, Y_train) # Adds noise
-np.savetxt("MultiValuedNoisyXORTrainingData.txt", np.append(X_train, Y_train.reshape((number_of_examples, 1)), axis=1), fmt='%d')
+np.savetxt("NoisyMultiValuedXORTrainingData.txt", np.append(X_train, Y_train.reshape((number_of_examples, 1)), axis=1), fmt='%d')
 
 X_test = np.zeros((number_of_examples, number_of_values*2), dtype=np.uint32)
 Y_test = np.zeros(number_of_examples, dtype=np.uint32)
@@ -32,4 +32,4 @@ for i in range(number_of_examples):
 	if (value_variable_1 % 2) != (value_variable_2 % 2):
 		Y_test[i] = 1
 
-np.savetxt("MultiValuedNoisyXORTestingData.txt", np.append(X_test, Y_test.reshape((number_of_examples, 1)), axis=1), fmt='%d')
+np.savetxt("NoisyMultiValuedXORTestingData.txt", np.append(X_test, Y_test.reshape((number_of_examples, 1)), axis=1), fmt='%d')
