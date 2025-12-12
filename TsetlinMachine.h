@@ -71,7 +71,7 @@ This code implements the Hierarchical Tsetlin Machine
 // Standard Tsetlin machine parameters
 
 #define THRESHOLD 15
-#define CLAUSES 10
+#define CLAUSES 2
 #define NUMBER_OF_STATES 100
 
 // Strategy
