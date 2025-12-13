@@ -69,12 +69,14 @@ int main(void)
 	float average = 0.0;
 	for (int i = 0; i < 100; i++) {
 		mc_tm_initialize(mc_tsetlin_machine);
+
 		clock_t start_total = clock();
 		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 200, 1.0);
 		clock_t end_total = clock();
 		double time_used = ((double) (end_total - start_total)) / CLOCKS_PER_SEC;
 
 		printf("EPOCH %d TIME: %f\n", i+1, time_used);
+
 		average += mc_tm_evaluate(mc_tsetlin_machine, X_test, y_test, NUMBER_OF_EXAMPLES);
 
 		printf("Average accuracy: %f\n", average/(i+1));
