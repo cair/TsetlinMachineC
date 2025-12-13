@@ -98,6 +98,7 @@ float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], 
 
 void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_class, float s)
 {
+	printf("UPDATE POSITIVE\n");
 	tm_update(mc_tm->tsetlin_machines[target_class], Xi, 1, s);
 
 	// Randomly pick one of the other classes, for pairwise learning of class output 
@@ -105,6 +106,8 @@ void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_c
 	while (negative_target_class == target_class) {
 		negative_target_class = (unsigned int)CLASSES * 1.0*rand()/((unsigned int)RAND_MAX+1);
 	}
+
+	printf("UPDATE NEGATIVE\n");
 
 	tm_update(mc_tm->tsetlin_machines[negative_target_class], Xi, 0, s);
 }
