@@ -13,7 +13,7 @@ for i in range(number_of_examples):
 
 	X_train[i, value_variable_1] = 1 
 	X_train[i, number_of_values + value_variable_2] = 1
-
+	X_train[i] = 1 - X_train[i]
 	if (value_variable_1 % 2) != (value_variable_2 % 2):
 		Y_train[i] = 1
 
@@ -26,8 +26,9 @@ for i in range(number_of_examples):
 	value_variable_1 = np.random.randint(number_of_values)
 	value_variable_2 = np.random.randint(number_of_values)
 
-	X_test[i, value_variable_1] = 1 
+	X_test[i, value_variable_1] = 1
 	X_test[i, number_of_values + value_variable_2] = 1
+	X_test[i] = 1 - X_test[i]
 
 	if (value_variable_1 % 2) != (value_variable_2 % 2):
 		Y_test[i] = 1
