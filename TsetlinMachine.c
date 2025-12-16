@@ -186,7 +186,9 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 	// ta_index refers to the first ta of the current clause component, and then n below points to the ta within the component to be updated
 	// feature_index refers to the first feature of the feature block, and n below points to the current feature inside the block
 
-	printf("START TYPE_I_FEEDBACK\n");
+	printf("\t\t\t\tSTART TYPE_I_FEEDBACK\n");
+
+	printf("\t\t\t\tClause %d, Component %d, TA Index %d, Feature Index %d, Features Per Block %d\n", clause, component, ta_index, feature_index, features_per_block);
 
 	if ((*tm).component_output[component] == 0) {
 		// If clause is False, all positive polarity components are given Type Ib (they are all guided towards match through excluding features)
@@ -203,7 +205,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 		}
 	}
 
-	printf("END TYPE_I_FEEDBACK\n");
+	printf("\t\t\t\tEND TYPE_I_FEEDBACK\n");
 }
 
 /**************************************************/
@@ -214,7 +216,7 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int cla
 	// ta_index refers to the first ta of the current clause component, and then n below points to the ta within the component to be updated
 	// feature_index refers to the first feature of the feature block, and n below points to the current feature inside the block
 
-	printf("START TYPE_II_FEEDBACK\n");
+	printf("\t\t\t\tSTART TYPE_II_FEEDBACK\n");
 
 	if ((*tm).component_output[component] == 1) {
 		for (int n = 0; n < features_per_block; n++) {
@@ -224,7 +226,7 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int cla
 		}
 	}
 
-	printf("END TYPE_II_FEEDBACK\n");
+	printf("\t\t\t\tEND TYPE_II_FEEDBACK\n");
 }
 
 /******************************************/
