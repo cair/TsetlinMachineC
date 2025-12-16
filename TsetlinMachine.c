@@ -83,11 +83,11 @@ static inline int action(int state)
 
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 {
-	printf("START CALCULATE_CLAUSE_OUTPUT\n");
+	//printf("START CALCULATE_CLAUSE_OUTPUT\n");
 
 	// Calculate the output of each clause
 	for (int j = 0; j < CLAUSES; j++) {
-		printf("CLAUSE %d\n", j);
+		//printf("CLAUSE %d\n", j);
 
 		int feature_index = 0; // Track the feature index
 		int action_index = 0; // Track the action index
@@ -97,22 +97,22 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 
 		int next_feature_index = (*tm).blocks_per_level[0] * (*tm).features_per_block[0]; // Tracks next feature to be assigned a value
 		for (int k = 0; k < LEVELS; k++) {
-			printf("LEVEL %d\n", k);
+			//printf("LEVEL %d\n", k);
 
 			// Traverse the blocks of the current level
 			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
-				printf("BLOCK %d\n", l);
-
+				//printf("BLOCK %d\n", l);
+ 
 				// Traverse the clause components of each feature block
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
-					printf("\tCOMPONENT %d\n", m);
+					//printf("\tCOMPONENT %d\n", m);
 
 					(*tm).component_output[component_index] = 1;
 					
 					for (int n = 0; n < (*tm).features_per_block[k]; n++) {
 						int action_include = action((*tm).ta_state[j][action_index + n]);
 
-						printf("\t\tAction: %d Include: %d Feature %d: %d\n", action_index + n, action_include, feature_index + n, Xi[feature_index + n]);
+						//printf("\t\tAction: %d Include: %d Feature %d: %d\n", action_index + n, action_include, feature_index + n, Xi[feature_index + n]);
 
 						if (action_include && (!Xi[feature_index + n])) {
 							(*tm).component_output[component_index] = 0;
@@ -120,15 +120,15 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 						}
 					}
 
-					printf("\t\tComponent Output %d\n", (*tm).component_output[component_index]);
+					//printf("\t\tComponent Output %d\n", (*tm).component_output[component_index]);
 
 					// Copy the component output into the next block feature vector (negated)...
 					if (k < LEVELS - 1) {
 						Xi[next_feature_index] = !(*tm).component_output[component_index];
-						printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
+						//printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
 					} else {
 						(*tm).clause_output[j] = !(*tm).component_output[component_index];
-						printf("\t\tClause Output = %d\n", (*tm).clause_output[j]);
+						//printf("\t\tClause Output = %d\n", (*tm).clause_output[j]);
 					}
 
 					next_feature_index++;
@@ -143,13 +143,13 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 
 	}
 
-	printf("END CALCULATE_CLAUSE_OUTPUT\n");
+	//printf("END CALCULATE_CLAUSE_OUTPUT\n");
 }
 
 /* Sum up the votes for each class (this is the multiclass version of the Tsetlin Machine) */
 static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 {
-	printf("START SUM_UP_CLASS_VOTES\n");
+	//printf("START SUM_UP_CLASS_VOTES\n");
 
 	int class_sum = 0;
 
@@ -164,9 +164,9 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 	class_sum = (class_sum > THRESHOLD) ? THRESHOLD : class_sum;
 	class_sum = (class_sum < -THRESHOLD) ? -THRESHOLD : class_sum;
 
-	printf("Class sum: %d\n", class_sum);
+	//printf("Class sum: %d\n", class_sum);
 
-	printf("END SUM_UP_CLASS_VOTES\n");
+	//printf("END SUM_UP_CLASS_VOTES\n");
 
 	return class_sum;
 }
@@ -186,16 +186,20 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 	// ta_index refers to the first ta of the current clause component, and then n below points to the ta within the component to be updated
 	// feature_index refers to the first feature of the feature block, and n below points to the current feature inside the block
 
-	printf("\t\t\t\tSTART TYPE_I_FEEDBACK\n");
+	//printf("\t\t\t\tSTART TYPE_I_FEEDBACK\n");
 
-	printf("\t\t\t\tClause %d, Component %d, TA Index %d, Feature Index %d, Features Per Block %d\n", clause, component, ta_index, feature_index, features_per_block);
+	//printf("\t\t\t\tClause %d, Component %d, TA Index %d, Feature Index %d, Features Per Block %d\n", clause, component, ta_index, feature_index, features_per_block);
 
 	if ((*tm).component_output[component] == 0) {
 		// If clause is False, all positive polarity components are given Type Ib (they are all guided towards match through excluding features)
-		for (int n = 0; n < features_per_block; n++) { 
-			(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));							
+		for (int n = 0; n < features_per_block; n++) {
+			//printf("\t\t\t\t\tSTART TYPE_IB_FEEDBACK\n");
+			(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));
+
 		}
-	} else if ((*tm).component_output[component] == 1) {					
+	} else if ((*tm).component_output[component] == 1) {
+		//printf("\t\t\t\t\tSTART TYPE_IA_FEEDBACK\n");
+
 		for (int n = 0; n < features_per_block; n++) {
 			if (Xi[feature_index + n] == 1) {
 				(*tm).ta_state[clause][ta_index + n] += ((*tm).ta_state[clause][ta_index + n] < NUMBER_OF_STATES*2) && (s >= 1.0 || (1.0*rand()/RAND_MAX <= s));
@@ -205,7 +209,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 		}
 	}
 
-	printf("\t\t\t\tEND TYPE_I_FEEDBACK\n");
+	//printf("\t\t\t\tEND TYPE_I_FEEDBACK\n");
 }
 
 /**************************************************/
@@ -216,7 +220,9 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int cla
 	// ta_index refers to the first ta of the current clause component, and then n below points to the ta within the component to be updated
 	// feature_index refers to the first feature of the feature block, and n below points to the current feature inside the block
 
-	printf("\t\t\t\tSTART TYPE_II_FEEDBACK\n");
+	//printf("\t\t\t\tSTART TYPE_II_FEEDBACK\n");
+
+	//printf("\t\t\t\tClause %d, Component %d, TA Index %d, Feature Index %d, Features Per Block %d\n", clause, component, ta_index, feature_index, features_per_block);
 
 	if ((*tm).component_output[component] == 1) {
 		for (int n = 0; n < features_per_block; n++) {
@@ -226,7 +232,7 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int cla
 		}
 	}
 
-	printf("\t\t\t\tEND TYPE_II_FEEDBACK\n");
+	//printf("\t\t\t\tEND TYPE_II_FEEDBACK\n");
 }
 
 /******************************************/
@@ -241,7 +247,7 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*** Calculate Clause Output ***/
 	/*******************************/
 	
-	printf("START TM_UPDATE\n");
+	//printf("START TM_UPDATE\n");
 
 	calculate_clause_output(tm, Xi);
 
@@ -255,12 +261,12 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*** Calculate Feedback to Clauses ***/
 	/*************************************/
 
-	printf("START SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n");
+	//printf("START SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n");
 
 	// Block feedback to component sub-hierarchies on true negative component.
 
 	for (int j = 0; j < CLAUSES; j++) {
-		printf("CLAUSE %d\n", j);
+		//printf("CLAUSE %d\n", j);
 
 		int component_index = 0; // Track the clause component index
 
@@ -269,23 +275,23 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 		int component_polarity = 1 - 2*(LEVELS % 2);
 
 		for (int k = 0; k < LEVELS; k++) {
-			printf("\tLEVEL %d\n", k);
-			printf("\tComponent Polarity: %d\n", component_polarity);
+			//printf("\tLEVEL %d\n", k);
+			//printf("\tComponent Polarity: %d\n", component_polarity);
 
 			// Traverse the blocks of the current level
 			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
-				printf("\t\tBlock %d\n", l);
+				//printf("\t\tBlock %d\n", l);
 
 				// Traverse the clause components of each feature block
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
-					printf("\t\t\tCOMPONENT %d\n", component_index);
+					//printf("\t\t\tCOMPONENT %d\n", component_index);
 					(*tm).feedback_to_components[j][component_index] =
 						(2*target-1) * // Negate the polarities for the non-target class 
 						component_polarity * // Each clause component has its own polarity, decided by the hierarchy level
 						(1 - 2 * (j >= (CLAUSES / 2))) * // The second half of the clauses have negative polariy
 						(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum)); // Each component is updated with the class sum-decided probability
 
-					printf("\t\t\t\tUPDATE %d\n", (*tm).feedback_to_components[j][component_index]);
+					//printf("\t\t\t\tUPDATE %d\n", (*tm).feedback_to_components[j][component_index]);
 					component_index++;
 				}
 			}
@@ -294,15 +300,65 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 		}
 	}
 
-	printf("END SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n\n");
+	//printf("END SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n\n");
 	
-	printf("START UPDATE INDIVIDUAL AUTOMATA\n");
+	//printf("START UPDATE INDIVIDUAL AUTOMATA\n");
 
 	/*********************************/
 	/*** Train Individual Automata ***/
 	/*********************************/
 
 	// Give feedback to each clause component separately
+
+	for (int j = 0; j < CLAUSES; j++) {
+		//printf("CLAUSE %d\n", j);
+
+		int feature_index = 0; // Track the feature index
+		int component_index = 0; // Track the clause component index
+		int action_index = 0; // Tracks the index of the actions to be updated
+
+		// Traverse the hierarchy left-right, bottom-up, level by level.
+
+		for (int k = 0; k < LEVELS; k++) {
+			//printf("\tLEVEL %d\n", k);
+
+			// Traverse the blocks of the current level
+			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
+				//printf("\t\tBlock %d\n", l);
+
+				// Traverse the clause components of each feature block
+				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
+					//printf("\t\t\tCOMPONENT %d\n", component_index);
+
+					// action_index refers to the first TA of the current component
+					// feature_index refers to the first feature of the current block
+
+					if ((*tm).feedback_to_components[j][component_index] > 0) {
+						//printf("\t\t\t\tType I Feedback\n");
+						type_i_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
+					} else if ((*tm).feedback_to_components[j][component_index] < 0) {
+						//printf("\t\t\t\tType II Feedback\n");
+						type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
+					}
+
+					action_index += (*tm).features_per_block[k]; // Move on to next clause component
+					component_index++;
+				}
+
+				// Skip to next block of features after all components have been evaluated on the present block
+				feature_index += (*tm).features_per_block[k];
+			}
+		}
+	}
+
+	//printf("END UPDATE INDIVIDUAL AUTOMATA\n");
+
+	//printf("END TM_UPDATE\n");
+
+	//exit(-1);
+}
+
+void tm_print(struct TsetlinMachine *tm) {
 
 	for (int j = 0; j < CLAUSES; j++) {
 		printf("CLAUSE %d\n", j);
@@ -324,16 +380,15 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
 					printf("\t\t\tCOMPONENT %d\n", component_index);
 
-					// action_index refers to the first TA of the current component
-					// feature_index refers to the first feature of the current block
-
-					if ((*tm).feedback_to_components[j][component_index] > 0) {
-						printf("\t\t\t\tType I Feedback\n");
-						type_i_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
-					} else if ((*tm).feedback_to_components[j][component_index] < 0) {
-						printf("\t\t\t\tType II Feedback\n");
-						type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
+			
+					printf("\t\t\t\t");
+					for (int n = 0; n < (*tm).features_per_block[k]; n++) {
+						int action_include = action((*tm).ta_state[j][action_index + n]);
+						if (action_include) {
+							printf("x%d ", feature_index + n);
+						}
 					}
+					printf("\n");
 
 					action_index += (*tm).features_per_block[k]; // Move on to next clause component
 					component_index++;
@@ -344,12 +399,6 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 			}
 		}
 	}
-
-	printf("END UPDATE INDIVIDUAL AUTOMATA\n");
-
-	printf("END TM_UPDATE\n");
-
-	exit(-1);
 }
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]) {

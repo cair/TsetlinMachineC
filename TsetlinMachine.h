@@ -27,7 +27,7 @@ This code implements the Hierarchical Tsetlin Machine
 
 #define LEVELS 3
 
-#define VALUES 10
+#define VALUES 2
 #define VARIABLES 2
 
 // Each clause is divided into components, a certain number of components per level
@@ -74,9 +74,9 @@ This code implements the Hierarchical Tsetlin Machine
 
 // Standard Tsetlin machine parameters
 
-#define THRESHOLD 15
+#define THRESHOLD 10
 #define CLAUSES 2
-#define NUMBER_OF_STATES 100
+#define NUMBER_OF_STATES 256
 
 // Strategy
 // Evaluate clause components from left to right, the last one becomes the clause output, use moving window...
@@ -106,4 +106,6 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
 int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
 int tm_get_state(struct TsetlinMachine *tm, int clause, int feature);
+
+void tm_print(struct TsetlinMachine *tm);
 

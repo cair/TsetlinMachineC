@@ -1,9 +1,9 @@
 import numpy as np
 
 
-noise = 0.0
-number_of_values = 10
-number_of_examples = 5000
+noise = 0.05
+number_of_values = 2
+number_of_examples = 10000
 
 X_train = np.zeros((number_of_examples, number_of_values*2), dtype=np.uint32)
 Y_train = np.zeros(number_of_examples, dtype=np.uint32)
