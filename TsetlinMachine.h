@@ -58,6 +58,10 @@ This code implements the Hierarchical Tsetlin Machine
 #define FEATURES_PER_BLOCK_LVL_2 (FEATURES_LVL_2 / BLOCKS_LVL_2)
 #define FEATURES_PER_BLOCK_LVL_3 (FEATURES_LVL_3 / BLOCKS_LVL_3)
 
+// Total number of actions in a single clause
+
+#define ACTIONS (COMPONENTS_LVL_1 * FEATURES_PER_BLOCK_LVL_1 + COMPONENTS_LVL_2 * FEATURES_PER_BLOCK_LVL_2 + COMPONENTS_LVL_3 * FEATURES_PER_BLOCK_LVL_3)
+
 // The clause components are also divided evenly among the blocks, so that each clause component gets its own subset of the features
 
 #define COMPONENTS_PER_BLOCK_LVL_1 (COMPONENTS_LVL_1 / BLOCKS_LVL_1)
@@ -84,7 +88,7 @@ struct TsetlinMachine {
 	
 	int components_per_block[LEVELS];
 
-	int ta_state[CLAUSES][FEATURES];
+	int ta_state[CLAUSES][ACTIONS];
 
 	int component_output[COMPONENTS];
 
