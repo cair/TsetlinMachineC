@@ -95,8 +95,6 @@ struct TsetlinMachine {
 	int feedback_to_components[COMPONENTS];
 
 	int clause_output[CLAUSES];
-
-	int feedback_to_clauses[CLAUSES];
 };
 
 struct TsetlinMachine *CreateTsetlinMachine();
