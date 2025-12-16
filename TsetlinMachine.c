@@ -277,13 +277,13 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 				// Traverse the clause components of each feature block
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
 					printf("\t\t\tCOMPONENT %d\n", component_index);
-					(*tm).feedback_to_components[component_index] =
+					(*tm).feedback_to_components[j][component_index] =
 						(2*target-1) * // Negate the polarities for the non-target class 
 						component_polarity * // Each clause component has its own polarity, decided by the hierarchy level
 						(1 - 2 * (j >= (CLAUSES / 2))) * // The second half of the clauses have negative polariy
 						(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum)); // Each component is updated with the class sum-decided probability
 
-					printf("\t\t\t\tUPDATE %d\n", (*tm).feedback_to_components[component_index]);
+					printf("\t\t\t\tUPDATE %d\n", (*tm).feedback_to_components[j][component_index]);
 					component_index++;
 				}
 			}
@@ -325,10 +325,10 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 					// action_index refers to the first TA of the current component
 					// feature_index refers to the first feature of the current block
 
-					if ((*tm).feedback_to_components[component_index] > 0) {
+					if ((*tm).feedback_to_components[j][component_index] > 0) {
 						printf("\t\t\t\tType I Feedback\n");
 						type_i_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
-					} else if ((*tm).feedback_to_components[component_index] < 0) {
+					} else if ((*tm).feedback_to_components[j][component_index] < 0) {
 						printf("\t\t\t\tType II Feedback\n");
 						type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
 					}

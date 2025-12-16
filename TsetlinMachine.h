@@ -92,7 +92,7 @@ struct TsetlinMachine {
 
 	int component_output[COMPONENTS];
 
-	int feedback_to_components[COMPONENTS];
+	int feedback_to_components[CLAUSES][COMPONENTS];
 
 	int clause_output[CLAUSES];
 };
