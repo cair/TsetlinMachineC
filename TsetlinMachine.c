@@ -358,6 +358,20 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	//exit(-1);
 }
 
+int tm_score(struct TsetlinMachine *tm, int Xi[]) {
+	/*******************************/
+	/*** Calculate Clause Output ***/
+	/*******************************/
+
+	calculate_clause_output(tm, Xi);
+
+	/***************************/
+	/*** Sum up Clause Votes ***/
+	/***************************/
+
+	return sum_up_class_votes(tm);
+}
+
 void tm_print(struct TsetlinMachine *tm) {
 
 	for (int j = 0; j < CLAUSES; j++) {
@@ -385,7 +399,7 @@ void tm_print(struct TsetlinMachine *tm) {
 					for (int n = 0; n < (*tm).features_per_block[k]; n++) {
 						int action_include = action((*tm).ta_state[j][action_index + n]);
 						if (action_include) {
-							printf("x%d ", feature_index + n);
+							printf("x%d(%d) ", feature_index + n, (*tm).ta_state[j][action_index + n]);
 						}
 					}
 					printf("\n");
@@ -399,20 +413,6 @@ void tm_print(struct TsetlinMachine *tm) {
 			}
 		}
 	}
-}
-
-int tm_score(struct TsetlinMachine *tm, int Xi[]) {
-	/*******************************/
-	/*** Calculate Clause Output ***/
-	/*******************************/
-
-	calculate_clause_output(tm, Xi);
-
-	/***************************/
-	/*** Sum up Clause Votes ***/
-	/***************************/
-
-	return sum_up_class_votes(tm);
 }
 
 
