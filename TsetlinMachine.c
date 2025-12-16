@@ -62,7 +62,7 @@ struct TsetlinMachine *CreateTsetlinMachine()
 void tm_initialize(struct TsetlinMachine *tm)
 {
 	for (int j = 0; j < CLAUSES; j++) {				
-		for (int k = 0; k < FEATURES; k++) {
+		for (int k = 0; k < ACTIONS; k++) {
 			if (1.0 * rand()/RAND_MAX <= 0.5) {
 				(*tm).ta_state[j][k] = NUMBER_OF_STATES;
 			} else {
@@ -164,7 +164,11 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 	class_sum = (class_sum > THRESHOLD) ? THRESHOLD : class_sum;
 	class_sum = (class_sum < -THRESHOLD) ? -THRESHOLD : class_sum;
 
+	printf("Class sum: %d\n", class_sum);
+
 	printf("END SUM_UP_CLASS_VOTES\n");
+
+	exit(-1);
 
 	return class_sum;
 }
@@ -192,7 +196,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 			(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));							
 		}
 	} else if ((*tm).component_output[component] == 1) {					
-		for (int n = 0; n < FEATURES; n++) {
+		for (int n = 0; n < features_per_block; n++) {
 			if (Xi[feature_index + n] == 1) {
 				(*tm).ta_state[clause][ta_index + n] += ((*tm).ta_state[clause][ta_index + n] < NUMBER_OF_STATES*2) && (s >= 1.0 || (1.0*rand()/RAND_MAX <= s));
 			} else if (Xi[feature_index + n] == 0) {				
