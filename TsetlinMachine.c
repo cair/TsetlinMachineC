@@ -123,9 +123,13 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 					printf("\t\tComponent Output %d\n", (*tm).component_output[component_index]);
 
 					// Copy the component output into the next block feature vector (negated)...
-
-					Xi[next_feature_index] = !(*tm).component_output[component_index];
-					printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
+					if (k < LEVELS - 1) {
+						Xi[next_feature_index] = !(*tm).component_output[component_index];
+						printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
+					} else {
+						(*tm).clause_output[j] = !(*tm).component_output[component_index];
+						printf("\t\tClause Output = %d\n", (*tm).clause_output[j]);
+					}
 
 					next_feature_index++;
 					action_index += (*tm).features_per_block[k];
@@ -137,9 +141,6 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 			}
 		}
 
-		(*tm).clause_output[j] = Xi[FEATURES - 1];
-
-		printf("\tClause Output %d\n", (*tm).clause_output[j]);
 	}
 
 	printf("END CALCULATE_CLAUSE_OUTPUT\n");
