@@ -168,8 +168,6 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 
 	printf("END SUM_UP_CLASS_VOTES\n");
 
-	exit(-1);
-
 	return class_sum;
 }
 
@@ -256,15 +254,12 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*************************************/
 
 	printf("START SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n");
-	// Calculate feedback to clause components
-	for (int j = 0; j < COMPONENTS; j++) {
-		(*tm).feedback_to_components[j] = (2*target-1)*(1 - 2 * (j & 1))*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
-	}
-	printf("END SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n");
 
 	// Block feedback to component sub-hierarchies on true negative component.
 
 	for (int j = 0; j < CLAUSES; j++) {
+		printf("CLAUSE %d\n", j);
+
 		int component_index = 0; // Track the clause component index
 
 		// Traverse the hierarchy left-right, bottom-up, level by level.
@@ -272,18 +267,23 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 		int component_polarity = 1 - 2*(LEVELS % 2);
 
 		for (int k = 0; k < LEVELS; k++) {
+			printf("\tLEVEL %d\n", k);
+			printf("\tComponent Polarity: %d\n", component_polarity);
 
 			// Traverse the blocks of the current level
 			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
+				printf("\t\tBlock %d\n", l);
 
 				// Traverse the clause components of each feature block
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
+					printf("\t\t\tCOMPONENT %d\n", component_index);
 					(*tm).feedback_to_components[component_index] =
 						(2*target-1) * // Negate the polarities for the non-target class 
 						component_polarity * // Each clause component has its own polarity, decided by the hierarchy level
 						(1 - 2 * (j >= (CLAUSES / 2))) * // The second half of the clauses have negative polariy
 						(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum)); // Each component is updated with the class sum-decided probability
 
+					printf("\t\t\t\tUPDATE %d\n", (*tm).feedback_to_components[component_index]);
 					component_index++;
 				}
 			}
@@ -291,6 +291,8 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 			component_polarity = -1 * component_polarity; // The component polarity switches, level by level in the hierarchy
 		}
 	}
+
+	printf("END SELECT POLARITY AND FEEDBACK FOR COMPONENTS\n");
 	
 	/*********************************/
 	/*** Train Individual Automata ***/
@@ -330,6 +332,8 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	}
 
 	printf("END TM_UPDATE\n");
+
+	exit(-1);
 }
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]) {
