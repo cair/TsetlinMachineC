@@ -177,23 +177,15 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int feature)
 /*** Type I Feedback (Combats False Negatives) ***/
 /*************************************************/
 
-static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clause, int component, int ta_index, int feature_index, int features_per_block, float s)
+static inline void type_ia_feedback(struct TsetlinMachine *tm, int Xi[], int clause, int component, int ta_index, int feature_index, int features_per_block, float s)
 {
 	// ta_index refers to the first ta of the current clause component, and then n below points to the ta within the component to be updated
 	// feature_index refers to the first feature of the feature block, and n below points to the current feature inside the block
 
-	//printf("\t\t\t\tSTART TYPE_I_FEEDBACK\n");
+	//printf("\t\t\t\tSTART TYPE_Ia_FEEDBACK\n");
 
 	//printf("\t\t\t\tClause %d, Component %d, TA Index %d, Feature Index %d, Features Per Block %d\n", clause, component, ta_index, feature_index, features_per_block);
 
-	if ((*tm).component_output[component] == 0) {
-		// If clause is False, all positive polarity components are given Type Ib (they are all guided towards match through excluding features)
-		for (int n = 0; n < features_per_block; n++) {
-			//printf("\t\t\t\t\tSTART TYPE_IB_FEEDBACK\n");
-			(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));
-
-		}
-	} else if ((*tm).component_output[component] == 1) {
 		//printf("\t\t\t\t\tSTART TYPE_IA_FEEDBACK\n");
 
 		for (int n = 0; n < features_per_block; n++) {
@@ -203,9 +195,27 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 				(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));
 			}
 		}
-	}
 
-	//printf("\t\t\t\tEND TYPE_I_FEEDBACK\n");
+	//printf("\t\t\t\tEND TYPE_Ia_FEEDBACK\n");
+}
+
+static inline void type_ib_feedback(struct TsetlinMachine *tm, int Xi[], int clause, int component, int ta_index, int feature_index, int features_per_block, float s)
+{
+	// ta_index refers to the first ta of the current clause component, and then n below points to the ta within the component to be updated
+	// feature_index refers to the first feature of the feature block, and n below points to the current feature inside the block
+
+	//printf("\t\t\t\tSTART TYPE_Ib_FEEDBACK\n");
+
+	//printf("\t\t\t\tClause %d, Component %d, TA Index %d, Feature Index %d, Features Per Block %d\n", clause, component, ta_index, feature_index, features_per_block);
+
+		// If clause is False, all positive polarity components are given Type Ib (they are all guided towards match through excluding features)
+		for (int n = 0; n < features_per_block; n++) {
+			//printf("\t\t\t\t\tSTART TYPE_IB_FEEDBACK\n");
+			(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));
+
+		}
+
+	//printf("\t\t\t\tEND TYPE_Ib_FEEDBACK\n");
 }
 
 /**************************************************/
@@ -344,15 +354,17 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 					// action_index refers to the first TA of the current component
 					// feature_index refers to the first feature of the current block
 
-					//if (!stop) {
-						if ((*tm).feedback_to_components[j][component_index] > 0) {
-							//printf("\t\t\t\tType I Feedback\n");
-							type_i_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
-						} else if ((*tm).feedback_to_components[j][component_index] < 0) {
-							//printf("\t\t\t\tType II Feedback\n");
-							type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
-						}
-					//}
+					if ((*tm).feedback_to_components[j][component_index] > 0) {
+						//printf("\t\t\t\tType I Feedback\n");
+							if ((*tm).component_output[component_index] == 0 || stop) {
+								type_ib_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
+							} else {
+								type_ia_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
+							}
+					} else if ((*tm).feedback_to_components[j][component_index] < 0) {
+						//printf("\t\t\t\tType II Feedback\n");
+						type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
+					}
 
 					if ((*tm).component_output[component_index] == 1) {
 						stop = 1;
