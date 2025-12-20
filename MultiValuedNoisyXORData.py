@@ -1,8 +1,8 @@
 import numpy as np
 
 
-noise = 0.05
-number_of_values = 10
+noise = 0.0
+number_of_values = 2
 number_of_examples = 10000
 
 X_train = np.zeros((number_of_examples, number_of_values*2), dtype=np.uint32)
@@ -11,9 +11,9 @@ for i in range(number_of_examples):
 	value_variable_1 = np.random.randint(number_of_values)
 	value_variable_2 = np.random.randint(number_of_values)
 
-	while value_variable_1 % 2:
-		value_variable_1 = np.random.randint(number_of_values)
-		value_variable_2 = np.random.randint(number_of_values)
+#	while value_variable_1 % 2:
+#		value_variable_1 = np.random.randint(number_of_values)
+#		value_variable_2 = np.random.randint(number_of_values)
 
 	X_train[i, value_variable_1] = 1 
 	X_train[i, number_of_values + value_variable_2] = 1
@@ -29,9 +29,9 @@ Y_test = np.zeros(number_of_examples, dtype=np.uint32)
 for i in range(number_of_examples):
 	value_variable_1 = np.random.randint(number_of_values)
 	value_variable_2 = np.random.randint(number_of_values)
-	while value_variable_1 % 2:
-		value_variable_1 = np.random.randint(number_of_values)
-		value_variable_2 = np.random.randint(number_of_values)
+#	while value_variable_1 % 2:
+#		value_variable_1 = np.random.randint(number_of_values)
+#		value_variable_2 = np.random.randint(number_of_values)
 
 	X_test[i, value_variable_1] = 1
 	X_test[i, number_of_values + value_variable_2] = 1
