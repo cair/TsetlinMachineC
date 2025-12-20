@@ -27,13 +27,13 @@ This code implements the Hierarchical Tsetlin Machine
 
 #define LEVELS 3
 
-#define VALUES 2
+#define VALUES 10
 #define VARIABLES 2
 
 // Each clause is divided into components, a certain number of components per level
 
-#define COMPONENTS_LVL_1 4
-#define COMPONENTS_LVL_2 2
+#define COMPONENTS_LVL_1 2
+#define COMPONENTS_LVL_2 1
 #define COMPONENTS_LVL_3 1
 
 // Each level in the hiearchy consists of a number of features
@@ -74,7 +74,7 @@ This code implements the Hierarchical Tsetlin Machine
 
 // Standard Tsetlin machine parameters
 
-#define THRESHOLD 10
+#define THRESHOLD 2
 #define CLAUSES 2
 #define NUMBER_OF_STATES 256
 

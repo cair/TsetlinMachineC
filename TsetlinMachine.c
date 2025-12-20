@@ -81,13 +81,11 @@ static inline int action(int state)
 /* Calculate the output of each clause using the actions of each Tsetline Automaton. */
 /* Output is stored an internal output array. */
 
-static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
+static inline void calculate_clause_output(struct TsetlinMachine *tm, int clause, int Xi[])
 {
-	//printf("START CALCULATE_CLAUSE_OUTPUT\n");
+	////printf("START CALCULATE_CLAUSE_OUTPUT\n");
 
-	// Calculate the output of each clause
-	for (int j = 0; j < CLAUSES; j++) {
-		//printf("CLAUSE %d\n", j);
+	// Calculate the output of clause
 
 		int feature_index = 0; // Track the feature index
 		int action_index = 0; // Track the action index
@@ -110,7 +108,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 					(*tm).component_output[component_index] = 1;
 					
 					for (int n = 0; n < (*tm).features_per_block[k]; n++) {
-						int action_include = action((*tm).ta_state[j][action_index + n]);
+						int action_include = action((*tm).ta_state[clause][action_index + n]);
 
 						//printf("\t\tAction: %d Include: %d Feature %d: %d\n", action_index + n, action_include, feature_index + n, Xi[feature_index + n]);
 
@@ -127,8 +125,8 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 						Xi[next_feature_index] = !(*tm).component_output[component_index];
 						//printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
 					} else {
-						(*tm).clause_output[j] = !(*tm).component_output[component_index];
-						//printf("\t\tClause Output = %d\n", (*tm).clause_output[j]);
+						(*tm).clause_output[clause] = !(*tm).component_output[component_index];
+						//printf("\t\tClause Output = %d\n", (*tm).clause_output[clause]);
 					}
 
 					next_feature_index++;
@@ -140,8 +138,6 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[])
 				feature_index += (*tm).features_per_block[k];
 			}
 		}
-
-	}
 
 	//printf("END CALCULATE_CLAUSE_OUTPUT\n");
 }
@@ -202,7 +198,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int clau
 
 		for (int n = 0; n < features_per_block; n++) {
 			if (Xi[feature_index + n] == 1) {
-				(*tm).ta_state[clause][ta_index + n] += ((*tm).ta_state[clause][ta_index + n] < NUMBER_OF_STATES*2) && (s >= 1.0 || (1.0*rand()/RAND_MAX <= s));
+				(*tm).ta_state[clause][ta_index + n] += ((*tm).ta_state[clause][ta_index + n] < NUMBER_OF_STATES*2) && ((s >= 1.0) || (1.0*rand()/RAND_MAX <= s));
 			} else if (Xi[feature_index + n] == 0) {				
 				(*tm).ta_state[clause][ta_index + n] -= ((*tm).ta_state[clause][ta_index + n] > 1) && (s <= 1.0 || (1.0*rand()/RAND_MAX <= 1.0/s));
 			}
@@ -227,6 +223,13 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int cla
 	if ((*tm).component_output[component] == 1) {
 		for (int n = 0; n < features_per_block; n++) {
 			(*tm).ta_state[clause][ta_index + n] += (Xi[feature_index + n] == 0);
+
+			if ((*tm).ta_state[clause][ta_index + n] > NUMBER_OF_STATES*2) {
+				//printf("COMPONENT OUTPUT %d; STATE %d; FEATURE %d\n",  (*tm).component_output[component], (*tm).ta_state[clause][ta_index + n], Xi[feature_index + n]);
+				exit(-1);
+			}
+
+			//printf("STATE %d %d\n", (*tm).ta_state[clause][ta_index + n], Xi[feature_index + n]);
 			// There is no need to check if the action is include, because then the component output would be false,
 			// and we are now looking at an output that is true.
 		}
@@ -249,7 +252,11 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	
 	//printf("START TM_UPDATE\n");
 
-	calculate_clause_output(tm, Xi);
+	for (int j = 0; j < CLAUSES; j++) {
+		//printf("CLAUSE %d\n", j);
+
+		calculate_clause_output(tm, j, Xi);
+	}
 
 	/***************************/
 	/*** Sum up Clause Votes ***/
@@ -313,6 +320,8 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	for (int j = 0; j < CLAUSES; j++) {
 		//printf("CLAUSE %d\n", j);
 
+		calculate_clause_output(tm, j, Xi);
+
 		int feature_index = 0; // Track the feature index
 		int component_index = 0; // Track the clause component index
 		int action_index = 0; // Tracks the index of the actions to be updated
@@ -326,19 +335,27 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
 				//printf("\t\tBlock %d\n", l);
 
+				int stop = 0;
+
 				// Traverse the clause components of each feature block
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
-					//printf("\t\t\tCOMPONENT %d\n", component_index);
+					//printf("\t\t\tCOMPONENT %d; FEEDBACK %d\n", component_index, (*tm).feedback_to_components[j][component_index]);
 
 					// action_index refers to the first TA of the current component
 					// feature_index refers to the first feature of the current block
 
-					if ((*tm).feedback_to_components[j][component_index] > 0) {
-						//printf("\t\t\t\tType I Feedback\n");
-						type_i_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
-					} else if ((*tm).feedback_to_components[j][component_index] < 0) {
-						//printf("\t\t\t\tType II Feedback\n");
-						type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
+					//if (!stop) {
+						if ((*tm).feedback_to_components[j][component_index] > 0) {
+							//printf("\t\t\t\tType I Feedback\n");
+							type_i_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
+						} else if ((*tm).feedback_to_components[j][component_index] < 0) {
+							//printf("\t\t\t\tType II Feedback\n");
+							type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
+						}
+					//}
+
+					if ((*tm).component_output[component_index] == 1) {
+						stop = 1;
 					}
 
 					action_index += (*tm).features_per_block[k]; // Move on to next clause component
@@ -363,7 +380,11 @@ int tm_score(struct TsetlinMachine *tm, int Xi[]) {
 	/*** Calculate Clause Output ***/
 	/*******************************/
 
-	calculate_clause_output(tm, Xi);
+	for (int j = 0; j < CLAUSES; j++) {
+		//printf("CLAUSE %d\n", j);
+
+		calculate_clause_output(tm, j, Xi);
+	}
 
 	/***************************/
 	/*** Sum up Clause Votes ***/
