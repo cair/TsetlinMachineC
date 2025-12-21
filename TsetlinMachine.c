@@ -347,6 +347,24 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 
 				int stop = 0;
 
+				int true_count = 0;
+				// Traverse the clause components of each feature block
+				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
+					true_count += (*tm).component_output[component_index + m];
+				}
+				
+				int random_component;
+				if (true_count > 0) {
+					random_component = rand() % (*tm).components_per_block[k];
+					while ((*tm).component_output[component_index + random_component] == 0) {
+						random_component = rand() % (*tm).components_per_block[k];
+					}
+
+					if ((*tm).feedback_to_components[j][component_index + random_component] > 0) {
+						type_ia_feedback(tm, Xi, j, component_index + random_component, action_index + ((*tm).features_per_block[k] * random_component), feature_index, (*tm).features_per_block[k], s*(*tm).components_per_block[k]);
+					}
+				}
+
 				// Traverse the clause components of each feature block
 				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
 					//printf("\t\t\tCOMPONENT %d; FEEDBACK %d\n", component_index, (*tm).feedback_to_components[j][component_index]);
@@ -354,25 +372,26 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 					// action_index refers to the first TA of the current component
 					// feature_index refers to the first feature of the current block
 
-					if ((*tm).feedback_to_components[j][component_index] > 0) {
+					if ((*tm).feedback_to_components[j][component_index + m] > 0) {
 						//printf("\t\t\t\tType I Feedback\n");
-							if ((*tm).component_output[component_index] == 0 || stop) {
-								type_ib_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
-							} else {
-								type_ia_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k], s);
-							}
-					} else if ((*tm).feedback_to_components[j][component_index] < 0) {
+						if (true_count == 0 || (random_component != m)) {
+							type_ib_feedback(tm, Xi, j, component_index + m, action_index, feature_index, (*tm).features_per_block[k], s*(*tm).components_per_block[k]);
+						}
+					} else if ((*tm).feedback_to_components[j][component_index + m] < 0) {
 						//printf("\t\t\t\tType II Feedback\n");
-						type_ii_feedback(tm, Xi, j, component_index, action_index, feature_index, (*tm).features_per_block[k]);
+						if ((*tm).clause_output[j] == 1) {
+							type_ii_feedback(tm, Xi, j, component_index + m, action_index, feature_index, (*tm).features_per_block[k]);
+						}
 					}
 
-					if ((*tm).component_output[component_index] == 1) {
+					if ((*tm).component_output[component_index + m] == 1) {
 						stop = 1;
 					}
 
 					action_index += (*tm).features_per_block[k]; // Move on to next clause component
-					component_index++;
 				}
+
+				component_index += (*tm).components_per_block[k];
 
 				// Skip to next block of features after all components have been evaluated on the present block
 				feature_index += (*tm).features_per_block[k];
