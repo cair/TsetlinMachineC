@@ -92,9 +92,10 @@ struct TsetlinMachine {
 
 	int component_output[COMPONENTS];
 
-	int feature_component[FEATURES];
+	int feature_component_index[FEATURES];
+	int component_action_index[COMPONENTS];
 
-	int component_stack[COMPONENTS][3]; // Component, hierarchy level, and block 
+	int component_stack[COMPONENTS]; // Component index, action index
 	int active_components[COMPONENTS];
 
 	int feedback_to_components[CLAUSES][COMPONENTS];

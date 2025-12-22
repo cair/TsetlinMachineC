@@ -65,6 +65,8 @@ void tm_initialize(struct TsetlinMachine *tm)
 
 	// Traverse the hierarchy left-right, bottom-up, level by level.
 
+	int action_index = 0;
+
 	int next_feature_index = (*tm).blocks_per_level[0] * (*tm).features_per_block[0]; // Tracks next feature to be assigned a value
 	for (int k = 0; k < LEVELS; k++) {
 		printf("LEVEL %d\n", k);
@@ -79,12 +81,15 @@ void tm_initialize(struct TsetlinMachine *tm)
 
 				// Map the feature to its component...
 				if (k < LEVELS - 1) {
-					(*tm).feature_component[next_feature_index] = component_index;
-					printf("\t\tFeature %d is associated wiht component %d\n", next_feature_index, component_index);
+					(*tm).feature_component_index[next_feature_index] = component_index;
+					(*tm).component_action_index[component_index] = action_index;
+					printf("\t\tFeature %d is associated with component %d\n", next_feature_index, component_index);
 				}
+				printf("\t\tAction index of component %d: %d\n", component_index, action_index);
 
 				next_feature_index++;
 				component_index++; // Move on to next component
+				action_index += (*tm).features_per_block[k];
 			}
 		}
 	}
@@ -361,14 +366,17 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 		calculate_clause_output(tm, j, Xi);
 
 		int component_stack_size = 0;
+		(*tm).component_stack[component_stack_size] = COMPONENTS-1;
+		component_stack_size++;
 
-		(*tm).component_stack[component_stack_size][0] = COMPONENTS-1;
-		(*tm).component_stack[component_stack_size][1] = 2; // Hierarchy level
-		(*tm).component_stack[component_stack_size][2] = 0; // Block
+		while (component_stack_size > 0) {
+			// Use feature_component structure to map include actions back to component...
+			component_stack_size--; 
 
+			int component_index = (*tm).component_stack[component_stack_size];
 
-
-
+			// Traverse actions of component
+		}
 
 		int feature_index = 0; // Track the feature index
 		int component_index = 0; // Track the clause component index
@@ -382,8 +390,6 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 			// Traverse the blocks of the current level
 			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
 				//printf("\t\tBlock %d\n", l);
-
-				int stop = 0;
 
 				int true_count = 0;
 				// Traverse the clause components of each feature block
@@ -420,10 +426,6 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 						if ((*tm).clause_output[j] == 1) {
 							type_ii_feedback(tm, Xi, j, component_index + m, action_index, feature_index, (*tm).features_per_block[k]);
 						}
-					}
-
-					if ((*tm).component_output[component_index + m] == 1) {
-						stop = 1;
 					}
 
 					action_index += (*tm).features_per_block[k]; // Move on to next clause component
