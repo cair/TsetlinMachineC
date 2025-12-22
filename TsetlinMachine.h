@@ -32,8 +32,8 @@ This code implements the Hierarchical Tsetlin Machine
 
 // Each clause is divided into components, a certain number of components per level
 
-#define COMPONENTS_LVL_1 2
-#define COMPONENTS_LVL_2 1
+#define COMPONENTS_LVL_1 4
+#define COMPONENTS_LVL_2 2
 #define COMPONENTS_LVL_3 1
 
 // Each level in the hiearchy consists of a number of features
@@ -91,6 +91,11 @@ struct TsetlinMachine {
 	int ta_state[CLAUSES][ACTIONS];
 
 	int component_output[COMPONENTS];
+
+	int feature_component[FEATURES];
+
+	int component_stack[COMPONENTS][3]; // Component, hierarchy level, and block 
+	int active_components[COMPONENTS];
 
 	int feedback_to_components[CLAUSES][COMPONENTS];
 

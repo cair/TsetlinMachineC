@@ -61,6 +61,34 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 void tm_initialize(struct TsetlinMachine *tm)
 {
+	int component_index = 0; // Track the clause component index
+
+	// Traverse the hierarchy left-right, bottom-up, level by level.
+
+	int next_feature_index = (*tm).blocks_per_level[0] * (*tm).features_per_block[0]; // Tracks next feature to be assigned a value
+	for (int k = 0; k < LEVELS; k++) {
+		printf("LEVEL %d\n", k);
+
+		// Traverse the blocks of the current level
+		for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
+			printf("BLOCK %d\n", l);
+
+			// Traverse the clause components of each feature block
+			for (int m = 0; m < (*tm).components_per_block[k]; m++) {
+				printf("\tCOMPONENT %d\n", m);				
+
+				// Map the feature to its component...
+				if (k < LEVELS - 1) {
+					(*tm).feature_component[next_feature_index] = component_index;
+					printf("\t\tFeature %d is associated wiht component %d\n", next_feature_index, component_index);
+				}
+
+				next_feature_index++;
+				component_index++; // Move on to next component
+			}
+		}
+	}
+
 	for (int j = 0; j < CLAUSES; j++) {				
 		for (int k = 0; k < ACTIONS; k++) {
 			if (1.0 * rand()/RAND_MAX <= 0.5) {
@@ -87,57 +115,57 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int clause
 
 	// Calculate the output of clause
 
-		int feature_index = 0; // Track the feature index
-		int action_index = 0; // Track the action index
-		int component_index = 0; // Track the clause component index
+	int feature_index = 0; // Track the feature index
+	int action_index = 0; // Track the action index
+	int component_index = 0; // Track the clause component index
 
-		// Traverse the hierarchy left-right, bottom-up, level by level.
+	// Traverse the hierarchy left-right, bottom-up, level by level.
 
-		int next_feature_index = (*tm).blocks_per_level[0] * (*tm).features_per_block[0]; // Tracks next feature to be assigned a value
-		for (int k = 0; k < LEVELS; k++) {
-			//printf("LEVEL %d\n", k);
+	int next_feature_index = (*tm).blocks_per_level[0] * (*tm).features_per_block[0]; // Tracks next feature to be assigned a value
+	for (int k = 0; k < LEVELS; k++) {
+		//printf("LEVEL %d\n", k);
 
-			// Traverse the blocks of the current level
-			for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
-				//printf("BLOCK %d\n", l);
- 
-				// Traverse the clause components of each feature block
-				for (int m = 0; m < (*tm).components_per_block[k]; m++) {
-					//printf("\tCOMPONENT %d\n", m);
+		// Traverse the blocks of the current level
+		for (int l = 0; l < (*tm).blocks_per_level[k]; l++) {
+			//printf("BLOCK %d\n", l);
 
-					(*tm).component_output[component_index] = 1;
-					
-					for (int n = 0; n < (*tm).features_per_block[k]; n++) {
-						int action_include = action((*tm).ta_state[clause][action_index + n]);
+			// Traverse the clause components of each feature block
+			for (int m = 0; m < (*tm).components_per_block[k]; m++) {
+				//printf("\tCOMPONENT %d\n", m);
 
-						//printf("\t\tAction: %d Include: %d Feature %d: %d\n", action_index + n, action_include, feature_index + n, Xi[feature_index + n]);
+				(*tm).component_output[component_index] = 1;
+				
+				for (int n = 0; n < (*tm).features_per_block[k]; n++) {
+					int action_include = action((*tm).ta_state[clause][action_index + n]);
 
-						if (action_include && (!Xi[feature_index + n])) {
-							(*tm).component_output[component_index] = 0;
-							break;
-						}
+					//printf("\t\tAction: %d Include: %d Feature %d: %d\n", action_index + n, action_include, feature_index + n, Xi[feature_index + n]);
+
+					if (action_include && (!Xi[feature_index + n])) {
+						(*tm).component_output[component_index] = 0;
+						break;
 					}
-
-					//printf("\t\tComponent Output %d\n", (*tm).component_output[component_index]);
-
-					// Copy the component output into the next block feature vector (negated)...
-					if (k < LEVELS - 1) {
-						Xi[next_feature_index] = !(*tm).component_output[component_index];
-						//printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
-					} else {
-						(*tm).clause_output[clause] = !(*tm).component_output[component_index];
-						//printf("\t\tClause Output = %d\n", (*tm).clause_output[clause]);
-					}
-
-					next_feature_index++;
-					action_index += (*tm).features_per_block[k];
-					component_index++; // Move on to next component
 				}
 
-				// Skip to next block of features after all components have been evaluated on the present block
-				feature_index += (*tm).features_per_block[k];
+				//printf("\t\tComponent Output %d\n", (*tm).component_output[component_index]);
+
+				// Copy the component output into the next block feature vector (negated)...
+				if (k < LEVELS - 1) {
+					Xi[next_feature_index] = !(*tm).component_output[component_index];
+					//printf("\t\tNext feature %d = %d\n", next_feature_index, !(*tm).component_output[component_index]);
+				} else {
+					(*tm).clause_output[clause] = !(*tm).component_output[component_index];
+					//printf("\t\tClause Output = %d\n", (*tm).clause_output[clause]);
+				}
+
+				next_feature_index++;
+				action_index += (*tm).features_per_block[k];
+				component_index++; // Move on to next component
 			}
+
+			// Skip to next block of features after all components have been evaluated on the present block
+			feature_index += (*tm).features_per_block[k];
 		}
+	}
 
 	//printf("END CALCULATE_CLAUSE_OUTPUT\n");
 }
@@ -331,6 +359,16 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 		//printf("CLAUSE %d\n", j);
 
 		calculate_clause_output(tm, j, Xi);
+
+		int component_stack_size = 0;
+
+		(*tm).component_stack[component_stack_size][0] = COMPONENTS-1;
+		(*tm).component_stack[component_stack_size][1] = 2; // Hierarchy level
+		(*tm).component_stack[component_stack_size][2] = 0; // Block
+
+
+
+
 
 		int feature_index = 0; // Track the feature index
 		int component_index = 0; // Track the clause component index
