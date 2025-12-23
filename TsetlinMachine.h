@@ -25,7 +25,7 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 150
+#define THRESHOLD 50
 #define FEATURES 200
 #define CLAUSES 10
 #define NUMBER_OF_STATES 512

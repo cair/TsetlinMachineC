@@ -1,7 +1,7 @@
 import numpy as np
 
 
-noise = 0.0
+noise = 0.05
 number_of_values = 100
 number_of_examples = 20000
 
