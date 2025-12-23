@@ -5,7 +5,7 @@
 #include <time.h>
 #include <string.h>
 
-#define NUMBER_OF_EXAMPLES 5000
+#define NUMBER_OF_EXAMPLES 20000
 
 int X_train[NUMBER_OF_EXAMPLES][FEATURES];
 int y_train[NUMBER_OF_EXAMPLES];
@@ -22,7 +22,7 @@ void read_file(void)
 	const char *s = " ";
 	char *token = NULL;
 
-	fp = fopen("NoisyXORTrainingData.txt", "r");
+	fp = fopen("NoisyMultiValuedXORTrainingData.txt", "r");
 	if (fp == NULL) {
 		printf("Error opening\n");
 		exit(EXIT_FAILURE);
@@ -39,7 +39,7 @@ void read_file(void)
 		y_train[i] = atoi(token);
 	}
 
-	fp = fopen("NoisyXORTestData.txt", "r");
+	fp = fopen("NoisyMultiValuedXORTestingData.txt", "r");
 	if (fp == NULL) {
 		printf("Error opening\n");
 		exit(EXIT_FAILURE);
@@ -70,7 +70,7 @@ int main(void)
 	for (int i = 0; i < 100; i++) {
 		mc_tm_initialize(mc_tsetlin_machine);
 		clock_t start_total = clock();
-		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 200, 3.9);
+		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 200, 1.0);
 		clock_t end_total = clock();
 		double time_used = ((double) (end_total - start_total)) / CLOCKS_PER_SEC;
 

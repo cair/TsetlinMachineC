@@ -74,7 +74,7 @@ static inline int action(int state)
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
 	int j, k;
-	int action_include, action_include_negated;
+	int action_include;
 	int all_exclude;
 
 	for (j = 0; j < CLAUSES; j++) {
@@ -82,17 +82,16 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		all_exclude = 1;
 		for (k = 0; k < FEATURES; k++) {
 			action_include = action((*tm).ta_state[j][k][0]);
-			action_include_negated = action((*tm).ta_state[j][k][1]);
 
-			all_exclude = all_exclude && !(action_include == 1 || action_include_negated == 1);
+			all_exclude = all_exclude && !(action_include == 1);
 
-			if ((action_include == 1 && Xi[k] == 0) || (action_include_negated == 1 && Xi[k] == 1)) {
+			if ((action_include == 1 && Xi[k] == 0)) {
 				(*tm).clause_output[j] = 0;
 				break;
 			}
 		}
 
-		(*tm).clause_output[j] = (*tm).clause_output[j] && !(predict == PREDICT && all_exclude == 1);
+		//(*tm).clause_output[j] = (*tm).clause_output[j] && !(predict == PREDICT && all_exclude == 1);
 	}
 }
 
@@ -133,12 +132,8 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 		for (int k = 0; k < FEATURES; k++) {
 			if (Xi[k] == 1) {
 				(*tm).ta_state[j][k][0] += ((*tm).ta_state[j][k][0] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
-
-				(*tm).ta_state[j][k][1] -= ((*tm).ta_state[j][k][1] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			} else if (Xi[k] == 0) {
 				(*tm).ta_state[j][k][1] += ((*tm).ta_state[j][k][1] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
-				
-				(*tm).ta_state[j][k][0] -= ((*tm).ta_state[j][k][0] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
@@ -151,15 +146,12 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 
 static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
 	int action_include;
-	int action_include_negated;
 
 	if ((*tm).clause_output[j] == 1) {
 		for (int k = 0; k < FEATURES; k++) { 
 			action_include = action((*tm).ta_state[j][k][0]);
-			action_include_negated = action((*tm).ta_state[j][k][1]);
 
 			(*tm).ta_state[j][k][0] += (action_include == 0 && (*tm).ta_state[j][k][0] < NUMBER_OF_STATES*2) && (Xi[k] == 0);
-			(*tm).ta_state[j][k][1] += (action_include_negated == 0 && (*tm).ta_state[j][k][1] < NUMBER_OF_STATES*2) && (Xi[k] == 1);
 		}
 	}
 }
