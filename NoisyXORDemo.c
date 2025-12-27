@@ -77,6 +77,8 @@ int main(void)
 		printf("EPOCH %d TIME: %f\n", i+1, time_used);
 		average += mc_tm_evaluate(mc_tsetlin_machine, X_test, y_test, NUMBER_OF_EXAMPLES);
 
+		tm_print(mc_tsetlin_machine->tsetlin_machines[0]);
+
 		printf("Average accuracy: %f\n", average/(i+1));
 	}
 

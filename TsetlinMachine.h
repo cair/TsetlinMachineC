@@ -54,3 +54,4 @@ int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
 int tm_get_state(struct TsetlinMachine *tm, int clause, int feature);
 
+void tm_print(struct TsetlinMachine *tm);

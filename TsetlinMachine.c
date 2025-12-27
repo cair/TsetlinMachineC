@@ -208,4 +208,18 @@ int tm_score(struct TsetlinMachine *tm, int Xi[]) {
 	return sum_up_class_votes(tm);
 }
 
+void tm_print(struct TsetlinMachine *tm) {
+
+	for (int j = 0; j < CLAUSES; j++) {
+		printf("CLAUSE %d (%+d):", j, 1 - 2 * (j & 1));
+
+		for (int k = 0; k < FEATURES; k++) {
+			int action_include = action((*tm).ta_state[j][k]);
+			if (action_include) {
+				printf(" ¬x_%d_%d(%d) ", k / 10, k % 10, (*tm).ta_state[j][k]);
+			}
+		}
+		printf("\n");
+	}
+}
 
