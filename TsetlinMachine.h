@@ -26,8 +26,11 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 10
-#define FEATURES 40
+#define VALUES 10
+#define VARIABLES 4
+#define FEATURES (VARIABLES * VALUES)
 #define CLAUSES 30
+#define COMPONENTS 2
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
 
@@ -35,7 +38,9 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSES][FEATURES];
+	int ta_state[COMPONENTS][VALUES];
+
+	int clause_components[CLAUSES][VARIABLES];
 
 	int clause_output[CLAUSES];
 

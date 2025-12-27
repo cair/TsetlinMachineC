@@ -27,6 +27,7 @@ https://arxiv.org/abs/1804.01508
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "TsetlinMachine.h"
 
@@ -49,14 +50,24 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 void tm_initialize(struct TsetlinMachine *tm)
 {
-	for (int j = 0; j < CLAUSES; j++) {				
-		for (int k = 0; k < FEATURES; k++) {
+	for (int j = 0; j < COMPONENTS; j++) {				
+		for (int k = 0; k < VALUES; k++) {
 			if (1.0 * rand()/RAND_MAX <= 0.5) {
 				(*tm).ta_state[j][k] = NUMBER_OF_STATES;
 			} else {
 				(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
 			}
 		}
+	}
+
+	for (int k = 0; k < pow(2, VARIABLES); k++) {
+
+		printf("Clause %d:", k);
+		for (int l = 0; l < VARIABLES; l++) {
+			(*tm).clause_components[k][l] = (k >> l) % 2;
+			printf(" %d", (*tm).clause_components[k][l]);			
+		}
+		printf("\n");
 	}
 }
 
