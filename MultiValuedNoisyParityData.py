@@ -3,7 +3,7 @@ import numpy as np
 
 noise = 0.0
 number_of_values = 8
-number_of_variables = 2
+number_of_variables = 3
 number_of_examples = 20000
 
 X_train = np.zeros((number_of_examples, number_of_values*number_of_variables), dtype=np.uint32)

@@ -27,9 +27,9 @@ https://arxiv.org/abs/1804.01508
 
 #define THRESHOLD 4
 #define VALUES 8
-#define VARIABLES 2
+#define VARIABLES 3
 #define FEATURES (VARIABLES * VALUES)
-#define CLAUSES 4
+#define CLAUSES 8
 #define COMPONENTS 2
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
