@@ -75,7 +75,12 @@ int main(void)
 		printf("EPOCH %d TIME: %f\n", i+1, time_used);
 		float accuracy = mc_tm_evaluate(mc_tsetlin_machine, X_test, y_test, NUMBER_OF_EXAMPLES);
 
+		printf("\n**** TM 1 ****\n");
 		tm_print(mc_tsetlin_machine->tsetlin_machines[0]);
+
+		printf("\n**** TM 2 ****\n");
+
+		tm_print(mc_tsetlin_machine->tsetlin_machines[1]);
 
 		printf("Accuracy: %f\n", accuracy);
 

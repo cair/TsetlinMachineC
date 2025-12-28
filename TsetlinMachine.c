@@ -193,7 +193,7 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) 
 
 		for (int l = 0; l < VALUES; l++) {
 			action_include = action((*tm).ta_state[(*tm).clause_components[j][k]][l]);
-			(*tm).ta_state[(*tm).clause_components[j][k]][l] += (action_include == 0 && ((*tm).ta_state[(*tm).clause_components[j][k]][l]) < NUMBER_OF_STATES*2) && (Xi[k] == 0);
+			(*tm).ta_state[(*tm).clause_components[j][k]][l] += (action_include == 0 && ((*tm).ta_state[(*tm).clause_components[j][k]][l]) < NUMBER_OF_STATES*2) && (Xi[k*VALUES + l] == 0);
 		}
 	}
 }
