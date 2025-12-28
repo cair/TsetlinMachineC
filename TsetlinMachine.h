@@ -25,11 +25,11 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 10
+#define THRESHOLD 4
 #define VALUES 10
 #define VARIABLES 4
 #define FEATURES (VARIABLES * VALUES)
-#define CLAUSES 30
+#define CLAUSES 16
 #define COMPONENTS 2
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
@@ -37,8 +37,10 @@ https://arxiv.org/abs/1804.01508
 #define PREDICT 1
 #define UPDATE 0
 
-struct TsetlinMachine { 
+struct TsetlinMachine {
 	int ta_state[COMPONENTS][VALUES];
+
+	int clause_weight[CLAUSES];
 
 	int clause_components[CLAUSES][VARIABLES];
 
@@ -49,9 +51,9 @@ struct TsetlinMachine {
 	int feedback_to_clauses[CLAUSES];
 };
 
-struct TsetlinMachine *CreateTsetlinMachine();
+struct TsetlinMachine *CreateTsetlinMachine(int sign);
 
-void tm_initialize(struct TsetlinMachine *tm);
+void tm_initialize(struct TsetlinMachine *tm, int sign);
 
 void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
 

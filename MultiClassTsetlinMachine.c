@@ -43,7 +43,7 @@ struct MultiClassTsetlinMachine *CreateMultiClassTsetlinMachine()
 	mc_tm = (void *)malloc(sizeof(struct MultiClassTsetlinMachine));
 
 	for (int i = 0; i < CLASSES; i++) {
-		mc_tm->tsetlin_machines[i] = CreateTsetlinMachine();
+		mc_tm->tsetlin_machines[i] = CreateTsetlinMachine(1 - 2*(i % 2));
 	}
 	return mc_tm;
 }
@@ -51,7 +51,7 @@ struct MultiClassTsetlinMachine *CreateMultiClassTsetlinMachine()
 void mc_tm_initialize(struct MultiClassTsetlinMachine *mc_tm)
 {
 	for (int i = 0; i < CLASSES; i++) {
-		tm_initialize(mc_tm->tsetlin_machines[i]);
+		tm_initialize(mc_tm->tsetlin_machines[i], 1 - 2*(i % 2));
 	}
 }
 
