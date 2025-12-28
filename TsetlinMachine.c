@@ -157,7 +157,9 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 	} else if ((*tm).clause_output[j] == 1) {					
 		for (int l = 0; l < VALUES; l++) {
 			if (Xi[k*VALUES + l] == 1) {
-				(*tm).ta_state[(*tm).clause_components[j][k]][l] += ((*tm).ta_state[(*tm).clause_components[j][k]][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+				if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
+					(*tm).ta_state[(*tm).clause_components[j][k]][l] += ((*tm).ta_state[(*tm).clause_components[j][k]][l] < NUMBER_OF_STATES*2);
+				} 
 			} else {
 				(*tm).ta_state[(*tm).clause_components[j][k]][l] -= ((*tm).ta_state[(*tm).clause_components[j][k]][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
