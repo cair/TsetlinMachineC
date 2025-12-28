@@ -2,7 +2,7 @@ import numpy as np
 
 
 noise = 0.0
-number_of_values = 4
+number_of_values = 8
 number_of_variables = 2
 number_of_examples = 20000
 
