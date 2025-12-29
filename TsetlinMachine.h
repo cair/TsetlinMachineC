@@ -25,7 +25,7 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 4
+#define THRESHOLD 40
 #define VALUES 8
 #define VARIABLES 3
 #define FEATURES (VARIABLES * VALUES)

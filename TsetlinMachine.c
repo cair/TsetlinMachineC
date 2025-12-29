@@ -70,19 +70,22 @@ void tm_initialize(struct TsetlinMachine *tm, int sign)
 			one_count += (*tm).clause_components[k][l];
 			printf(" %d", (*tm).clause_components[k][l]);			
 		}
-		if ((one_count % 2) == 0) {
-			if (sign > 0) {
-				(*tm).clause_weight[k] = 1;
-			} else {
-				(*tm).clause_weight[k] = -1;
-			}
-		} else {
-			if (sign > 0) {
-				(*tm).clause_weight[k] = -1;
-			} else {
-				(*tm).clause_weight[k] = 1;
-			}
-		}
+		// if ((one_count % 2) == 0) {
+		// 	if (sign > 0) {
+		// 		(*tm).clause_weight[k] = 1;
+		// 	} else {
+		// 		(*tm).clause_weight[k] = -1;
+		// 	}
+		// } else {
+		// 	if (sign > 0) {
+		// 		(*tm).clause_weight[k] = -1;
+		// 	} else {
+		// 		(*tm).clause_weight[k] = 1;
+		// 	}
+		// }
+
+		(*tm).clause_weight[k] = 1 - 2*(rand() % 2);
+
 		printf(" (%d)\n", (*tm).clause_weight[k]);
 	}
 }
@@ -140,11 +143,11 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int feature)
 
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s)
 {
-//	if ((*tm).clause_weight[j] > 0) {
-//		(*tm).clause_weight[j] += 1;
-//	} else if ((*tm).clause_weight[j] < 0) {
-//		(*tm).clause_weight[j] -= 1;
-//	}
+	if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
+		(*tm).clause_weight[j] += 1;
+	} else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
+		(*tm).clause_weight[j] -= 1;
+	}
 
 	// Pick random component
 
@@ -175,19 +178,20 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
 	int action_include;
 
+
 	if ((*tm).clause_output[j] == 1) {
 	
-	// 	if ((*tm).clause_weight[j] > 0) {
-	// 		(*tm).clause_weight[j] -= 1;
-	// 		if ((*tm).clause_weight[j] == 0) {
-	// 			(*tm).clause_weight[j] = -1;
-	// 		}
-	// 	} else if ((*tm).clause_weight[j] < 0) {
-	// 		(*tm).clause_weight[j] += 1;
-	// 		if ((*tm).clause_weight[j] == 0) {
-	// 			(*tm).clause_weight[j] = 1;
-	// 		}
-	// 	}
+		if ((*tm).clause_weight[j] > 0) {
+			(*tm).clause_weight[j] -= 1;
+			if ((*tm).clause_weight[j] == 0) {
+				(*tm).clause_weight[j] = -1;
+			}
+		} else if ((*tm).clause_weight[j] < 0) {
+			(*tm).clause_weight[j] += 1;
+			if ((*tm).clause_weight[j] == 0) {
+				(*tm).clause_weight[j] = 1;
+			}
+		}
 
 		int k = rand() % VARIABLES;
 
