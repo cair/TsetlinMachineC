@@ -25,11 +25,11 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 40
-#define VALUES 8
-#define VARIABLES 3
+#define THRESHOLD 100
+#define VALUES 16
+#define VARIABLES 4
 #define FEATURES (VARIABLES * VALUES)
-#define CLAUSES 8
+#define CLAUSES 16
 #define COMPONENTS 2
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
