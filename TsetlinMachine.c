@@ -143,12 +143,6 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int feature)
 
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s)
 {
-	if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
-		(*tm).clause_weight[j] += 1;
-	} else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
-		(*tm).clause_weight[j] -= 1;
-	}
-
 	// Pick random component
 
 	int k = rand() % VARIABLES;
@@ -157,7 +151,13 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 		for (int l = 0; l < VALUES; l++) {
 			(*tm).ta_state[(*tm).clause_components[j][k]][l] -= ((*tm).ta_state[(*tm).clause_components[j][k]][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		}
-	} else if ((*tm).clause_output[j] == 1) {					
+	} else if ((*tm).clause_output[j] == 1) {	
+		if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
+			(*tm).clause_weight[j] += 1;
+		} else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
+			(*tm).clause_weight[j] -= 1;
+		}
+
 		for (int l = 0; l < VALUES; l++) {
 			if (Xi[k*VALUES + l] == 1) {
 				if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
