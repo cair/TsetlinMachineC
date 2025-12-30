@@ -57,6 +57,8 @@ void tm_initialize(struct TsetlinMachine *tm, int sign)
 			} else {
 				(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
 			}
+
+			//(*tm).ta_state[j][k] = 1;
 		}
 	}
 
