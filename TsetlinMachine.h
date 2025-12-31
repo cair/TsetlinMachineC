@@ -25,13 +25,13 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 100
+#define THRESHOLD 1000
 #define VALUES 16
 #define VARIABLES 4
 #define FEATURES (VARIABLES * VALUES)
 #define CLAUSES 16
 #define COMPONENTS 2
-#define NUMBER_OF_STATES 256
+#define NUMBER_OF_STATES 128
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
 
 #define PREDICT 1

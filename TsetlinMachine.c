@@ -52,13 +52,14 @@ void tm_initialize(struct TsetlinMachine *tm, int sign)
 {
 	for (int j = 0; j < COMPONENTS; j++) {				
 		for (int k = 0; k < VALUES; k++) {
-			if (1.0 * rand()/RAND_MAX <= 0.5) {
-				(*tm).ta_state[j][k] = NUMBER_OF_STATES;
-			} else {
-				(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
-			}
+			// if (1.0 * rand()/RAND_MAX <= 0.5) {
+			// 	(*tm).ta_state[j][k] = NUMBER_OF_STATES;
+			// } else {
+			// 	(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
+			// }
 
-			//(*tm).ta_state[j][k] = 1;
+			//(*tm).ta_state[j][k] = NUMBER_OF_STATES;
+			(*tm).ta_state[j][k] = 1;
 		}
 	}
 
