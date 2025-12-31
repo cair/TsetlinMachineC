@@ -28,9 +28,10 @@ https://arxiv.org/abs/1804.01508
 #define THRESHOLD 1000
 #define VALUES 16
 #define VARIABLES 4
-#define FEATURES (VARIABLES * VALUES)
-#define CLAUSES 16
 #define COMPONENTS 2
+#define FEATURES (VARIABLES * VALUES)
+#define LAYER_TWO_FEATURES (COMPONENTS*VARIABLES)
+#define CLAUSES 16
 #define NUMBER_OF_STATES 128
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
 
@@ -41,6 +42,9 @@ struct TsetlinMachine {
 	int ta_state[COMPONENTS][VALUES];
 
 	int clause_weight[CLAUSES];
+	
+	int layer_two_ta_state[CLAUSES][LAYER_TWO_FEATURES];
+	int layer_two_X[LAYER_TWO_FEATURES];
 
 	int clause_components[CLAUSES][VARIABLES];
 
