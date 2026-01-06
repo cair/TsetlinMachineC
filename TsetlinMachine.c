@@ -183,13 +183,28 @@ int tm_get_state_layer_two(struct TsetlinMachine *tm, int clause, int variable, 
 
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s)
 {
-	// Pick random component
+	// Pick random variable
 
 	int k = rand() % VARIABLES;
 
+	// Only do this if all components are false???? (Or will components be gradually protected as the clause sum increases...)
+	for (int l = 0; l < COMPONENTS; l++) {
+		if ((*tm).layer_two_X[k][l] == 0) {
+			for (int m = 0; m < VALUES; m++) {
+				(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			}
+		}
+	}
+	
 	if ((*tm).clause_output[j] == 0) {
-		for (int l = 0; l < VALUES; l++) {
-			(*tm).ta_state[(*tm).clause_components[j][k]][l] -= ((*tm).ta_state[(*tm).clause_components[j][k]][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+		for (int l = 0; l < COMPONENTS; l++) {
+			int action_include = action((*tm).layer_two_ta_state[j][k][l]);
+
+
+			if (action_include == 1 && (*tm).layer_two_X[variable][l] == 0) {
+				(*tm).clause_output[j] = 0;
+				break;
+			} 
 		}
 	} else if ((*tm).clause_output[j] == 1) {	
 		if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
