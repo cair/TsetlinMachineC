@@ -50,29 +50,32 @@ struct TsetlinMachine *CreateTsetlinMachine(int sign)
 
 void tm_initialize(struct TsetlinMachine *tm, int sign)
 {
-	for (int j = 0; j < COMPONENTS; j++) {				
-		for (int k = 0; k < VALUES; k++) {
+	for (int l = 0; l < COMPONENTS; l++) {				
+		for (int m = 0; m < VALUES; m++) {
 			// if (1.0 * rand()/RAND_MAX <= 0.5) {
-			// 	(*tm).ta_state[j][k] = NUMBER_OF_STATES;
+			// 	(*tm).ta_state[l][m] = NUMBER_OF_STATES;
 			// } else {
-			// 	(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
+			// 	(*tm).ta_state[l][m] = NUMBER_OF_STATES + 1;
 			// }
 
-			//(*tm).ta_state[j][k] = NUMBER_OF_STATES;
-			(*tm).ta_state[j][k] = 1;
+			//(*tm).ta_state[l][m] = NUMBER_OF_STATES;
+			(*tm).ta_state[l][m] = 1;
 		}
 	}
 
 	for (int j = 0; j < CLAUSES; j++) {				
-		for (int k = 0; k < LAYER_TWO_FEATURES; k++) {
+		for (int k = 0; k < VARIABLES; k++) {
+			for (int l = 0; l < COMPONENTS; l++) {
+
 			// if (1.0 * rand()/RAND_MAX <= 0.5) {
-			// 	(*tm).ta_state[j][k] = NUMBER_OF_STATES;
+			// 	(*tm).layer_two_ta_state[j][k][l] = NUMBER_OF_STATES;
 			// } else {
-			// 	(*tm).ta_state[j][k] = NUMBER_OF_STATES + 1;
+			// 	(*tm).layer_two_ta_state[j][k][l] = NUMBER_OF_STATES + 1;
 			// }
 
-			//(*tm).ta_state[j][k] = NUMBER_OF_STATES;
-			(*tm).layer_two_ta_state[j][k] = 1;
+			//(*tm).layer_two_ta_state[j][k][l] = NUMBER_OF_STATES;
+				(*tm).layer_two_ta_state[j][k][l] = 1;
+			}
 		}
 	}
 
@@ -142,7 +145,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 			for (int l = 0; l < COMPONENTS; l++) {
 				int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 
-				if (action_include == 1 && (*tm).layer_two_X[variable][l] == 0) {
+				if (action_include == 1 && (*tm).layer_two_X[k][l] == 0) {
 					(*tm).clause_output[j] = 0;
 					break;
 				} 
@@ -198,13 +201,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 	
 	if ((*tm).clause_output[j] == 0) {
 		for (int l = 0; l < COMPONENTS; l++) {
-			int action_include = action((*tm).layer_two_ta_state[j][k][l]);
-
-
-			if (action_include == 1 && (*tm).layer_two_X[variable][l] == 0) {
-				(*tm).clause_output[j] = 0;
-				break;
-			} 
+			(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		}
 	} else if ((*tm).clause_output[j] == 1) {	
 		if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
@@ -213,13 +210,13 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 			(*tm).clause_weight[j] -= 1;
 		}
 
-		for (int l = 0; l < VALUES; l++) {
-			if (Xi[k*VALUES + l] == 1) {
+		for (int l = 0; l < COMPONENTS; l++) {
+			if ((*tm).layer_two_X[k][l] == 1) {
 				if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
-					(*tm).ta_state[(*tm).clause_components[j][k]][l] += ((*tm).ta_state[(*tm).clause_components[j][k]][l] < NUMBER_OF_STATES*2);
+					(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_ta_state[j][k][l] < NUMBER_OF_STATES*2);
 				} 
 			} else {
-				(*tm).ta_state[(*tm).clause_components[j][k]][l] -= ((*tm).ta_state[(*tm).clause_components[j][k]][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
