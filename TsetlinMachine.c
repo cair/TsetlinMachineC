@@ -117,17 +117,35 @@ static inline int action(int state)
 
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
+	// Evaluate components on each variable...
+
+	for (int k = 0; k < VARIABLES; k++) {
+		for (int l = 0; l < COMPONENTS; l++) {
+			(*tm).layer_two_X[k][l] = 1;
+			for (int m = 0; m < VALUES; m++) {
+				int action_include = action((*tm).ta_state[l][m]);
+
+				if ((action_include == 1 && Xi[k*VALUES + m] == 0)) {
+					(*tm).layer_two_X[k][l] = 0;
+					break;
+				}
+			}
+		}
+	}
+
+	// Evaluate each clause using layer_two_X
+
 	for (int j = 0; j < CLAUSES; j++) {
 		(*tm).clause_output[j] = 1;
 
 		for (int k = 0; k < VARIABLES; k++) {
-			for (int l = 0; l < VALUES; l++) {
-				int action_include = action((*tm).ta_state[(*tm).clause_components[j][k]][l]);
+			for (int l = 0; l < COMPONENTS; l++) {
+				int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 
-				if ((action_include == 1 && Xi[k*VALUES + l] == 0)) {
+				if (action_include == 1 && (*tm).layer_two_X[variable][l] == 0) {
 					(*tm).clause_output[j] = 0;
 					break;
-				}
+				} 
 			}
 		}
 	}
@@ -148,9 +166,15 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 }
 
 /* Get the state of a specific automaton, indexed by clause, feature, and automaton type (include/include negated). */
-int tm_get_state(struct TsetlinMachine *tm, int clause, int feature)
+int tm_get_state(struct TsetlinMachine *tm, int component, int value)
 {
-	return (*tm).ta_state[clause][feature];
+	return (*tm).ta_state[component][value];
+}
+
+/* Get the state of a specific automaton, indexed by clause, feature, and automaton type (include/include negated). */
+int tm_get_state_layer_two(struct TsetlinMachine *tm, int clause, int variable, int component)
+{
+	return (*tm).layer_two_ta_state[clause][variable][component];
 }
 
 /*************************************************/

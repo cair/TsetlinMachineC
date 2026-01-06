@@ -43,8 +43,8 @@ struct TsetlinMachine {
 
 	int clause_weight[CLAUSES];
 	
-	int layer_two_ta_state[CLAUSES][LAYER_TWO_FEATURES];
-	int layer_two_X[LAYER_TWO_FEATURES];
+	int layer_two_ta_state[CLAUSES][VARIABLES][COMPONENTS];
+	int layer_two_X[VARIABLES][COMPONENTS];
 
 	int clause_components[CLAUSES][VARIABLES];
 
