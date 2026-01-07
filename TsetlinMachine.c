@@ -276,6 +276,8 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) 
 
 			(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_X[k][l] == 0);
 		}
+
+		(*tm).layer_two_ta_state[j][k][COMPONENTS] += ((*tm).layer_two_X[k][COMPONENTS] == 0);
 	}
 }
 
