@@ -40,4 +40,4 @@ void mc_tm_initialize(struct MultiClassTsetlinMachine *mc_tm);
 
 float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples);
 
-void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples, int epochs, float s);
+void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples, int epochs, float s1, float s2);

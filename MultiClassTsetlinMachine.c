@@ -96,9 +96,9 @@ float mc_tm_evaluate(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], 
 // The Tsetlin Machine can be trained incrementally, one training example at a time.
 // Use this method directly for online and incremental training.
 
-void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_class, float s)
+void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_class, float s1, float s2)
 {
-	tm_update(mc_tm->tsetlin_machines[target_class], Xi, 1, s);
+	tm_update(mc_tm->tsetlin_machines[target_class], Xi, 1, s1, s2);
 
 	// Randomly pick one of the other classes, for pairwise learning of class output 
 	unsigned int negative_target_class = (unsigned int)CLASSES * 1.0*rand()/((unsigned int)RAND_MAX+1);
@@ -106,19 +106,19 @@ void mc_tm_update(struct MultiClassTsetlinMachine *mc_tm, int Xi[], int target_c
 		negative_target_class = (unsigned int)CLASSES * 1.0*rand()/((unsigned int)RAND_MAX+1);
 	}
 
-	tm_update(mc_tm->tsetlin_machines[negative_target_class], Xi, 0, s);
+	tm_update(mc_tm->tsetlin_machines[negative_target_class], Xi, 0, s1, s2);
 }
 
 /**********************************************/
 /*** Batch Mode Training of Tsetlin Machine ***/
 /**********************************************/
 
-void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples, int epochs, float s)
+void mc_tm_fit(struct MultiClassTsetlinMachine *mc_tm, int X[][FEATURES], int y[], int number_of_examples, int epochs, float s1, float s2)
 {
 	for (int epoch = 0; epoch < epochs; epoch++) {
 		// Add shuffling here...		
 		for (int i = 0; i < number_of_examples; i++) {
-			mc_tm_update(mc_tm, X[i], y[i], s);
+			mc_tm_update(mc_tm, X[i], y[i], s1, s2);
 		}
 	}
 }

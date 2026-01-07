@@ -65,7 +65,7 @@ void tm_initialize(struct TsetlinMachine *tm, int sign)
 
 	for (int j = 0; j < CLAUSES; j++) {				
 		for (int k = 0; k < VARIABLES; k++) {
-			for (int l = 0; l < COMPONENTS; l++) {
+			for (int l = 0; l < COMPONENTS + 1; l++) {
 
 				// if (1.0 * rand()/RAND_MAX <= 0.5) {
 				// 	(*tm).layer_two_ta_state[j][k][l] = NUMBER_OF_STATES;
@@ -116,6 +116,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 				}
 			}
 		}
+		(*tm).layer_two_X[k][COMPONENTS] = 0;
 	}
 
 	// Evaluate each clause using layer_two_X
@@ -124,7 +125,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		(*tm).clause_output[j] = 1;
 
 		for (int k = 0; k < VARIABLES; k++) {
-			for (int l = 0; l < COMPONENTS; l++) {
+			for (int l = 0; l < COMPONENTS + 1; l++) {
 				int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 
 				if (action_include == 1 && (*tm).layer_two_X[k][l] == 0) {
@@ -166,7 +167,7 @@ int tm_get_state_layer_two(struct TsetlinMachine *tm, int clause, int variable, 
 /*** Type I Feedback (Combats False Negatives) ***/
 /*************************************************/
 
-static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s)
+static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s1, float s2)
 {
 	// Pick random variable
 
@@ -176,7 +177,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 	for (int l = 0; l < COMPONENTS; l++) {
 		if ((*tm).layer_two_X[k][l] == 0) {
 			for (int m = 0; m < VALUES; m++) {
-				(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s1);
 			}
 		}
 	}
@@ -191,25 +192,25 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 	
 	if ((*tm).clause_output[j] == 0 || included_components_count > 1) {
 		// False clauses are also given Type Ib feedback as usual.
-		for (int l = 0; l < COMPONENTS; l++) {
-			(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+		for (int l = 0; l < COMPONENTS + 1; l++) {
+			(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s2);
 		}
 
 		
 	} else if ((*tm).clause_output[j] == 1) {	
-		// if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
-		// 	(*tm).clause_weight[j] += 1;
-		// } else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
-		// 	(*tm).clause_weight[j] -= 1;
-		// }
+		if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
+			(*tm).clause_weight[j] += 1;
+		} else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
+			(*tm).clause_weight[j] -= 1;
+		}
 
-		for (int l = 0; l < COMPONENTS; l++) {
+		for (int l = 0; l < COMPONENTS + 1; l++) {
 			if ((*tm).layer_two_X[k][l] == 1) {
-				if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s))) {
+				if (s2 >= 1.0 || (s2 < 1.0 && (1.0*rand()/RAND_MAX <= s2))) {
 					(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_ta_state[j][k][l] < NUMBER_OF_STATES*2);
 				} 
 			} else {
-				(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s2);
 			}
 		}
 
@@ -232,11 +233,11 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 
 			for (int m = 0; m < VALUES; m++) {
 				if (Xi[k*VALUES + m] == 1) {
-					if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
+					if (s1 >= 1.0 || (s1 < 1.0 && (1.0*rand()/RAND_MAX <= s1)))  {
 						(*tm).ta_state[l][m] += ((*tm).ta_state[l][m] < NUMBER_OF_STATES*2);
 					}
 				} else {
-					(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+					(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s1);
 				}
 			}
 		}
@@ -251,21 +252,21 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
 	if ((*tm).clause_output[j] == 1) {
 	
-		// if ((*tm).clause_weight[j] > 0) {
-		// 	(*tm).clause_weight[j] -= 1;
-		// 	if ((*tm).clause_weight[j] == 0) {
-		// 		(*tm).clause_weight[j] = -1;
-		// 	}
-		// } else if ((*tm).clause_weight[j] < 0) {
-		// 	(*tm).clause_weight[j] += 1;
-		// 	if ((*tm).clause_weight[j] == 0) {
-		// 		(*tm).clause_weight[j] = 1;
-		// 	}
-		// }
+		if ((*tm).clause_weight[j] > 0) {
+			(*tm).clause_weight[j] -= 1;
+			if ((*tm).clause_weight[j] == 0) {
+				(*tm).clause_weight[j] = -1;
+			}
+		} else if ((*tm).clause_weight[j] < 0) {
+			(*tm).clause_weight[j] += 1;
+			if ((*tm).clause_weight[j] == 0) {
+				(*tm).clause_weight[j] = 1;
+			}
+		}
 
 		int k = rand() % VARIABLES;
 
-		for (int l = 0; l < COMPONENTS; l++) {
+		for (int l = 0; l < COMPONENTS + 1; l++) {
 			(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_X[k][l] == 0);
 	
 			int action_include = action((*tm).layer_two_ta_state[j][k][l]);
@@ -285,7 +286,7 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) 
 // The Tsetlin Machine can be trained incrementally, one training example at a time.
 // Use this method directly for online and incremental training.
 
-void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
+void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s1, float s2) {
 	/*******************************/
 	/*** Calculate Clause Output ***/
 	/*******************************/
@@ -325,7 +326,7 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	int feedback_to_clause = (2*target-1)*((*tm).clause_weight[clause])*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
 	
 	if (feedback_to_clause > 0) {
-		type_i_feedback(tm, Xi, clause, s);
+		type_i_feedback(tm, Xi, clause, s1, s2);
 	} else if (feedback_to_clause < 0) {
 		type_ii_feedback(tm, Xi, clause);
 	}
@@ -351,7 +352,7 @@ void tm_print(struct TsetlinMachine *tm) {
 		printf("CLAUSE %d (%+d): ", j, (*tm).clause_weight[j]);
 
 		for (int k = 0; k < VARIABLES; k++) {
-			for (int l = 0; l < COMPONENTS; l++) {
+			for (int l = 0; l < COMPONENTS + 1; l++) {
 				int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 				if (action_include) {
 					printf(" x%d,%d(%d)", k, l, (*tm).layer_two_ta_state[j][k][l]);

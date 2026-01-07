@@ -25,9 +25,9 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 40
-#define VALUES 6
-#define VARIABLES 2
+#define THRESHOLD 100
+#define VALUES 4
+#define VARIABLES 3
 #define COMPONENTS 2
 #define FEATURES (VARIABLES * VALUES)
 #define LAYER_TWO_FEATURES (COMPONENTS*VARIABLES)
@@ -43,8 +43,8 @@ struct TsetlinMachine {
 
 	int clause_weight[CLAUSES];
 	
-	int layer_two_ta_state[CLAUSES][VARIABLES][COMPONENTS];
-	int layer_two_X[VARIABLES][COMPONENTS];
+	int layer_two_ta_state[CLAUSES][VARIABLES][COMPONENTS + 1];
+	int layer_two_X[VARIABLES][COMPONENTS + 1];
 
 	int clause_components[CLAUSES][VARIABLES];
 
@@ -59,7 +59,7 @@ struct TsetlinMachine *CreateTsetlinMachine(int sign);
 
 void tm_initialize(struct TsetlinMachine *tm, int sign);
 
-void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
+void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s1, float s2);
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
