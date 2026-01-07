@@ -267,14 +267,14 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) 
 		int k = rand() % VARIABLES;
 
 		for (int l = 0; l < COMPONENTS; l++) {	
+			(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_X[k][l] == 0);
+
 			int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 			if (action_include == 1) {
 				for (int m = 0; m < VALUES; m++) {
 					(*tm).ta_state[l][m] += (Xi[k*VALUES + m] == 0);
 				}
 			}
-
-			(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_X[k][l] == 0);
 		}
 
 		(*tm).layer_two_ta_state[j][k][COMPONENTS] += ((*tm).layer_two_X[k][COMPONENTS] == 0);
