@@ -2,7 +2,7 @@ import numpy as np
 
 
 noise = 0.05
-number_of_values = 4
+number_of_values = 5
 number_of_variables = 3
 number_of_examples = 20000
 
@@ -11,9 +11,11 @@ Y_train = np.zeros(number_of_examples, dtype=np.uint32)
 for i in range(number_of_examples):
 	true_count = 0
 	for j in range(number_of_variables):
-		value_variable = np.random.randint(number_of_values)
+		value_variable = np.random.randint(number_of_values-1)
 		X_train[i, number_of_values * j + value_variable] = 1
+		X_train[i, number_of_values * j + number_of_values - 1] = 1
 		true_count += (value_variable % 2)
+
 	X_train[i] = 1 - X_train[i]
 	Y_train[i] = true_count % 2		
 
@@ -25,8 +27,9 @@ Y_test = np.zeros(number_of_examples, dtype=np.uint32)
 for i in range(number_of_examples):
 	true_count = 0
 	for j in range(number_of_variables):
-		value_variable = np.random.randint(number_of_values)
+		value_variable = np.random.randint(number_of_values-1)
 		X_test[i, number_of_values * j + value_variable] = 1
+		X_test[i, number_of_values * j + number_of_values - 1] = 1
 		true_count += (value_variable % 2)
 	X_test[i] = 1 - X_test[i]
 	Y_test[i] = true_count % 2
