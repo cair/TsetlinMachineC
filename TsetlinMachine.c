@@ -198,11 +198,11 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 
 		
 	} else if ((*tm).clause_output[j] == 1) {	
-		if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
-			(*tm).clause_weight[j] += 1;
-		} else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
-			(*tm).clause_weight[j] -= 1;
-		}
+		// if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
+		// 	(*tm).clause_weight[j] += 1;
+		// } else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
+		// 	(*tm).clause_weight[j] -= 1;
+		// }
 
 		for (int l = 0; l < COMPONENTS + 1; l++) {
 			if ((*tm).layer_two_X[k][l] == 1) {
@@ -252,17 +252,17 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
 	if ((*tm).clause_output[j] == 1) {
 	
-		if ((*tm).clause_weight[j] > 0) {
-			(*tm).clause_weight[j] -= 1;
-			if ((*tm).clause_weight[j] == 0) {
-				(*tm).clause_weight[j] = -1;
-			}
-		} else if ((*tm).clause_weight[j] < 0) {
-			(*tm).clause_weight[j] += 1;
-			if ((*tm).clause_weight[j] == 0) {
-				(*tm).clause_weight[j] = 1;
-			}
-		}
+		// if ((*tm).clause_weight[j] > 0) {
+		// 	(*tm).clause_weight[j] -= 1;
+		// 	if ((*tm).clause_weight[j] == 0) {
+		// 		(*tm).clause_weight[j] = -1;
+		// 	}
+		// } else if ((*tm).clause_weight[j] < 0) {
+		// 	(*tm).clause_weight[j] += 1;
+		// 	if ((*tm).clause_weight[j] == 0) {
+		// 		(*tm).clause_weight[j] = 1;
+		// 	}
+		// }
 
 		int k = rand() % VARIABLES;
 

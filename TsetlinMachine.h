@@ -25,7 +25,7 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 100
+#define THRESHOLD 10
 #define VALUES 4
 #define VARIABLES 3
 #define COMPONENTS 2
