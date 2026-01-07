@@ -46,11 +46,7 @@ struct TsetlinMachine {
 	int layer_two_ta_state[CLAUSES][VARIABLES][COMPONENTS + 1];
 	int layer_two_X[VARIABLES][COMPONENTS + 1];
 
-	int clause_components[CLAUSES][VARIABLES];
-
 	int clause_output[CLAUSES];
-
-	int true_clauses[CLAUSES];
 
 	int feedback_to_clauses[CLAUSES];
 };
