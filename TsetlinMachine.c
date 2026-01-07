@@ -65,7 +65,7 @@ void tm_initialize(struct TsetlinMachine *tm, int sign)
 
 	for (int j = 0; j < CLAUSES; j++) {				
 		for (int k = 0; k < VARIABLES; k++) {
-			for (int l = 0; l < COMPONENTS; l++) {
+			for (int l = 0; l < COMPONENTS + 1; l++) {
 
 				// if (1.0 * rand()/RAND_MAX <= 0.5) {
 				// 	(*tm).layer_two_ta_state[j][k][l] = NUMBER_OF_STATES;
@@ -81,25 +81,13 @@ void tm_initialize(struct TsetlinMachine *tm, int sign)
 
 	printf("SIGN: %d\n", sign);
 
-	for (int k = 0; k < pow(2, VARIABLES); k++) {
-		printf("Clause %d:", k);
-		// if ((one_count % 2) == 0) {
-		// 	if (sign > 0) {
-		// 		(*tm).clause_weight[k] = 1;
-		// 	} else {
-		// 		(*tm).clause_weight[k] = -1;
-		// 	}
-		// } else {
-		// 	if (sign > 0) {
-		// 		(*tm).clause_weight[k] = -1;
-		// 	} else {
-		// 		(*tm).clause_weight[k] = 1;
-		// 	}
-		// }
+	for (int j = 0; j < CLAUSES; j++) {
+		printf("Clause %d:", j);
+	
+		//(*tm).clause_weight[j] = 1 - 2*(rand() % 2);
+		(*tm).clause_weight[j] = 1 - 2*(j % 2);
 
-		(*tm).clause_weight[k] = 1 - 2*(rand() % 2);
-
-		printf(" (%d)\n", (*tm).clause_weight[k]);
+		printf(" (%d)\n", (*tm).clause_weight[j]);
 	}
 }
 
@@ -128,6 +116,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 				}
 			}
 		}
+		(*tm).layer_two_X[k][COMPONENTS] = 0;
 	}
 
 	// Evaluate each clause using layer_two_X
@@ -136,7 +125,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		(*tm).clause_output[j] = 1;
 
 		for (int k = 0; k < VARIABLES; k++) {
-			for (int l = 0; l < COMPONENTS; l++) {
+			for (int l = 0; l < COMPONENTS + 1; l++) {
 				int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 
 				if (action_include == 1 && (*tm).layer_two_X[k][l] == 0) {
@@ -192,22 +181,30 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 			}
 		}
 	}
+
+	int included_components_count = 0;
+	for (int l = 0; l < COMPONENTS; l++) {
+		int action_include = action((*tm).layer_two_ta_state[j][k][l]);
+		if (action_include == 1) {
+			included_components_count++;
+		}
+	}
 	
-	if ((*tm).clause_output[j] == 0) {
+	if ((*tm).clause_output[j] == 0 || included_components_count > 1) {
 		// False clauses are also given Type Ib feedback as usual.
-		for (int l = 0; l < COMPONENTS; l++) {
+		for (int l = 0; l < COMPONENTS + 1; l++) {
 			(*tm).layer_two_ta_state[j][k][l] -= ((*tm).layer_two_ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 		}
 	} else if ((*tm).clause_output[j] == 1) {	
-		if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
-			(*tm).clause_weight[j] += 1;
-		} else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
-			(*tm).clause_weight[j] -= 1;
-		}
+		// if ((*tm).clause_weight[j] > 0 && (*tm).clause_weight[j] < THRESHOLD) {
+		// 	(*tm).clause_weight[j] += 1;
+		// } else if ((*tm).clause_weight[j] < 0 && (*tm).clause_weight[j] > -THRESHOLD) {
+		// 	(*tm).clause_weight[j] -= 1;
+		// }
 
-		for (int l = 0; l < COMPONENTS; l++) {
+		for (int l = 0; l < COMPONENTS + 1; l++) {
 			if ((*tm).layer_two_X[k][l] == 1) {
-				if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
+				if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s))) {
 					(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_ta_state[j][k][l] < NUMBER_OF_STATES*2);
 				} 
 			} else {
@@ -217,17 +214,28 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 
 		// Update included components with Type Ia feedback
 		// Perform this before or after layer two updates?
+		// Update a random included component, not all.
+
+		int included_components[COMPONENTS];
+		int included_components_count = 0;
 		for (int l = 0; l < COMPONENTS; l++) {
 			int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 			if (action_include == 1) {
-				for (int m = 0; m < VALUES; m++) {
-					if (Xi[k*VALUES + m] == 1) {
-						if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
-							(*tm).ta_state[l][m] += ((*tm).ta_state[l][m] < NUMBER_OF_STATES*2);
-						}
-					} else {
-						(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				included_components[included_components_count] = l;
+				included_components_count++;
+			}
+		}
+
+		if (included_components_count > 0) {
+			int l = included_components[rand() % included_components_count];
+
+			for (int m = 0; m < VALUES; m++) {
+				if (Xi[k*VALUES + m] == 1) {
+					if (s >= 1.0 || (s < 1.0 && (1.0*rand()/RAND_MAX <= s)))  {
+						(*tm).ta_state[l][m] += ((*tm).ta_state[l][m] < NUMBER_OF_STATES*2);
 					}
+				} else {
+					(*tm).ta_state[l][m] -= ((*tm).ta_state[l][m] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 				}
 			}
 		}
@@ -242,21 +250,21 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
 	if ((*tm).clause_output[j] == 1) {
 	
-		if ((*tm).clause_weight[j] > 0) {
-			(*tm).clause_weight[j] -= 1;
-			if ((*tm).clause_weight[j] == 0) {
-				(*tm).clause_weight[j] = -1;
-			}
-		} else if ((*tm).clause_weight[j] < 0) {
-			(*tm).clause_weight[j] += 1;
-			if ((*tm).clause_weight[j] == 0) {
-				(*tm).clause_weight[j] = 1;
-			}
-		}
+		// if ((*tm).clause_weight[j] > 0) {
+		// 	(*tm).clause_weight[j] -= 1;
+		// 	if ((*tm).clause_weight[j] == 0) {
+		// 		(*tm).clause_weight[j] = -1;
+		// 	}
+		// } else if ((*tm).clause_weight[j] < 0) {
+		// 	(*tm).clause_weight[j] += 1;
+		// 	if ((*tm).clause_weight[j] == 0) {
+		// 		(*tm).clause_weight[j] = 1;
+		// 	}
+		// }
 
 		int k = rand() % VARIABLES;
 
-		for (int l = 0; l < COMPONENTS; l++) {
+		for (int l = 0; l < COMPONENTS + 1; l++) {
 			(*tm).layer_two_ta_state[j][k][l] += ((*tm).layer_two_X[k][l] == 0);
 	
 			int action_include = action((*tm).layer_two_ta_state[j][k][l]);
@@ -339,20 +347,28 @@ int tm_score(struct TsetlinMachine *tm, int Xi[]) {
 void tm_print(struct TsetlinMachine *tm) {
 
 	for (int j = 0; j < CLAUSES; j++) {
-		printf("CLAUSE %d (%+d)\n", j, (*tm).clause_weight[j]);
+		printf("CLAUSE %d (%+d): ", j, (*tm).clause_weight[j]);
 
-		for (int k = 0; k < COMPONENTS; k++) {
-			printf("COMPONENT %d:", k);
-
-			for (int l = 0; l < VALUES; l++) {
-				int action_include = action((*tm).ta_state[k][l]);
+		for (int k = 0; k < VARIABLES; k++) {
+			for (int l = 0; l < COMPONENTS + 1; l++) {
+				int action_include = action((*tm).layer_two_ta_state[j][k][l]);
 				if (action_include) {
-					printf(" ¬x%d(%d) ", l, (*tm).ta_state[k][l]);
+					printf(" x%d,%d(%d)", k, l, (*tm).layer_two_ta_state[j][k][l]);
 				}
+			}
+			printf("\n");
+		}
+	}
+
+	for (int l = 0; l < COMPONENTS; l++) {
+		printf("COMPONENT %d: ", l);
+		for (int m = 0; m < VALUES; m++) {
+			int action_include = action((*tm).ta_state[l][m]);
+			if (action_include) {
+				printf(" ¬x%d(%d)", m, (*tm).ta_state[l][m]);
+			}
 		}
 		printf("\n");
-		}
-		
 	}
 }
 
