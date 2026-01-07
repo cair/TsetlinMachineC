@@ -31,7 +31,7 @@ https://arxiv.org/abs/1804.01508
 #define COMPONENTS 2
 #define FEATURES (VARIABLES * VALUES)
 #define LAYER_TWO_FEATURES (COMPONENTS*VARIABLES)
-#define CLAUSES 8
+#define CLAUSES 16
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 1
 
@@ -43,8 +43,8 @@ struct TsetlinMachine {
 
 	int clause_weight[CLAUSES];
 	
-	int layer_two_ta_state[CLAUSES][VARIABLES][COMPONENTS + 1];
-	int layer_two_X[VARIABLES][COMPONENTS + 1];
+	int layer_two_ta_state[CLAUSES][VARIABLES][COMPONENTS];
+	int layer_two_X[VARIABLES][COMPONENTS];
 
 	int clause_components[CLAUSES][VARIABLES];
 
