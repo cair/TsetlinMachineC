@@ -27,7 +27,7 @@ https://arxiv.org/abs/1804.01508
 
 #define THRESHOLD 250
 #define VALUES 5
-#define VARIABLES 3
+#define VARIABLES 4
 #define COMPONENTS 4
 #define FEATURES (VARIABLES * VALUES)
 #define LAYER_TWO_FEATURES (COMPONENTS*VARIABLES)
