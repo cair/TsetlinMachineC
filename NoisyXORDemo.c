@@ -69,7 +69,7 @@ int main(void)
 	float accuracy_sum = 0.0;
 	for (int i = 0; i < 100; i++) {
 		clock_t start_total = clock();
-		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 2000, 3.0, 0.1);
+		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 10000, 1.5, 0.1);
 		clock_t end_total = clock();
 		double time_used = ((double) (end_total - start_total)) / CLOCKS_PER_SEC;
 
