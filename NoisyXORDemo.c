@@ -32,8 +32,9 @@ void read_file(void)
 		getline(&line, &len, fp);
 
 		token = strtok(line, s);
-		for (int j = 0; j < FEATURES; j++) {
+		for (int j = 0; j < FEATURES/2; j++) {
 			X_train[i][j] = atoi(token);
+			X_train[i][j + FEATURES / 2] = 1 - X_train[i][j];
 			token=strtok(NULL,s);
 		}
 		y_train[i] = atoi(token);
@@ -49,8 +50,10 @@ void read_file(void)
 		getline(&line, &len, fp);
 
 		token = strtok(line, s);
-		for (int j = 0; j < FEATURES; j++) {
+		for (int j = 0; j < FEATURES/2; j++) {
 			X_test[i][j] = atoi(token);
+			X_test[i][j + FEATURES / 2] = 1 - X_test[i][j];
+
 			token=strtok(NULL,s);
 		}
 		y_test[i] = atoi(token);
