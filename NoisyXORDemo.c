@@ -7,10 +7,10 @@
 
 #define NUMBER_OF_EXAMPLES 5000
 
-int X_train[NUMBER_OF_EXAMPLES][FEATURES];
+int X_train[NUMBER_OF_EXAMPLES][FEATURES + 1];
 int y_train[NUMBER_OF_EXAMPLES];
 
-int X_test[NUMBER_OF_EXAMPLES][FEATURES];
+int X_test[NUMBER_OF_EXAMPLES][FEATURES + 1];
 int y_test[NUMBER_OF_EXAMPLES];
 
 void read_file(void)

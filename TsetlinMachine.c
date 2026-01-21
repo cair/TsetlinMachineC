@@ -49,7 +49,7 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 void tm_initialize(struct TsetlinMachine *tm)
 {
-	for (int j = 0; j < CLAUSES; j++) {				
+	for (int j = 0; j < CLAUSE_COMPONENTS; j++) {				
 		for (int k = 0; k < FEATURES; k++) {
 			if (1.0 * rand()/RAND_MAX <= 0.5) {
 				(*tm).ta_state[j][k] = NUMBER_OF_STATES;
@@ -73,15 +73,12 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 {
 	int j, k;
 	int action_include;
-	int all_exclude;
 
-	for (j = 0; j < CLAUSES; j++) {
+	Xi[FEATURES] = 0;
+	for (j = 0; j < CLAUSE_COMPONENTS; j++) {
 		(*tm).clause_output[j] = 1;
-		all_exclude = 1;
 		for (k = 0; k < FEATURES; k++) {
 			action_include = action((*tm).ta_state[j][k]);
-
-			all_exclude = all_exclude && !(action_include == 1);
 
 			if ((action_include == 1 && Xi[k] == 0)) {
 				(*tm).clause_output[j] = 0;
@@ -89,7 +86,11 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 			}
 		}
 
-		(*tm).clause_output[j] = (*tm).clause_output[j] && !(predict == PREDICT && all_exclude == 1);
+		if ((*tm).clause_output[j]) {
+			Xi[FEATURES] = 1;
+		}
+
+		(*tm).clause_output[j] = (*tm).clause_output[j];
 	}
 }
 
@@ -97,7 +98,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 {
 	int class_sum = 0;
-	for (int j = 0; j < CLAUSES; j++) {
+	for (int j = 0; j < CLAUSE_COMPONENTS; j++) {
 		int sign = 1 - 2 * (j & 1);
 		class_sum += (*tm).clause_output[j]*sign;
 	}
@@ -177,7 +178,7 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*************************************/
 
 	// Calculate feedback to clauses
-	for (int j = 0; j < CLAUSES; j++) {
+	for (int j = 0; j < CLAUSE_COMPONENTS; j++) {
 		(*tm).feedback_to_clauses[j] = (2*target-1)*(1 - 2 * (j & 1))*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
 	}
 	
@@ -185,7 +186,7 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*** Train Individual Automata ***/
 	/*********************************/
 
-	for (int j = 0; j < CLAUSES; j++) {
+	for (int j = 0; j < CLAUSE_COMPONENTS; j++) {
 		if ((*tm).feedback_to_clauses[j] > 0) {
 			type_i_feedback(tm, Xi, j, s);
 		} else if ((*tm).feedback_to_clauses[j] < 0) {
