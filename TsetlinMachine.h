@@ -27,7 +27,7 @@ https://arxiv.org/abs/1804.01508
 
 #define THRESHOLD 15
 #define FEATURES 24
-#define CLAUSES 10
+#define CLAUSE_COMPONENTS 10
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
 
@@ -35,11 +35,11 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSES][FEATURES];
+	int ta_state[CLAUSE_COMPONENTS][FEATURES + 1];
 
-	int clause_output[CLAUSES];
+	int clause_output[CLAUSE_COMPONENTS];
 
-	int feedback_to_clauses[CLAUSES];
+	int feedback_to_clauses[CLAUSE_COMPONENTS];
 };
 
 struct TsetlinMachine *CreateTsetlinMachine();
