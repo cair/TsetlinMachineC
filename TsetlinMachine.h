@@ -26,9 +26,9 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 15
-#define FEATURES 24
+#define FEATURES 6
 #define CLAUSE_COMPONENTS 10
-#define NUMBER_OF_STATES 100
+#define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
 
 #define PREDICT 1
