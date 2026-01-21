@@ -89,8 +89,6 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		if ((*tm).clause_output[j]) {
 			Xi[FEATURES] = 1;
 		}
-
-		(*tm).clause_output[j] = (*tm).clause_output[j];
 	}
 }
 
