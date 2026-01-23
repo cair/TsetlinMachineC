@@ -27,6 +27,7 @@ https://arxiv.org/abs/1804.01508
 
 #define THRESHOLD 30
 #define FEATURES 6
+#define CLAUSES 2
 #define CLAUSE_COMPONENTS 20
 #define NUMBER_OF_STATES 256
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
@@ -35,11 +36,16 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSE_COMPONENTS][FEATURES + 1];
+	int ta_state[CLAUSES][CLAUSE_COMPONENTS][FEATURES]; // The clause components, unique per clause (later we can introduce sharing)
+	int ta_state_layer_two[CLAUSES][3]; // Three automata, one for x_3, one for \lnot x_3, and one for c_1^* OR c_2^*...
 
-	int clause_output[CLAUSE_COMPONENTS];
+	int clause_component_output[CLAUSES][CLAUSE_COMPONENTS]; // Here, we count how many times the rolled out clauses are True.
 
-	int feedback_to_clauses[CLAUSE_COMPONENTS];
+	int clause_output[CLAUSES]; // Here, we count how many times the rolled out clauses are True.
+
+	int feedback_to_components[CLAUSES][CLAUSE_COMPONENTS];
+
+	int feedback_to_clauses[CLAUSES]; // Decides which clause to update, but the clause sum is calculated after roll out.
 };
 
 struct TsetlinMachine *CreateTsetlinMachine();
@@ -50,5 +56,4 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
-int tm_get_state(struct TsetlinMachine *tm, int clause, int feature);
-
+int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, int feature);
