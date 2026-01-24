@@ -108,6 +108,16 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 			(*tm).clause_output[j] += (*tm).clause_component_output[j][k]; // Add one vote her if clause component is True.
 		}
 
+		if (Xi[FEATURES-1] == 1) {
+			if (j < CLAUSES / 2) {
+				(*tm).clause_output[j] = 0;
+			}
+		} else {
+			if (j >= CLAUSES / 2) {
+				(*tm).clause_output[j] = 0;
+			}
+		}
+
 		// action_include = action((*tm).ta_state_layer_two[j][0]);
 		// if ((action_include == 1 && Xi[2] == 0)) {
 		// 	(*tm).clause_output[j] = 0; // Resets vote sum
@@ -152,13 +162,13 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k, float s)
 {
-	if ((*tm).clause_component_output[j][k] == 0)	{
+	if ((*tm).clause_output[j] == 0 || (*tm).clause_component_output[j][k] == 0)	{
 		for (int l = 0; l < FEATURES - 1; l++) {
 			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
 
 			(*tm).ta_state[j][k][l + FEATURES] -= ((*tm).ta_state[j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
-	} else if ((*tm).clause_component_output[j][k] == 1) {					
+	} else {					
 		for (int l = 0; l < FEATURES - 1; l++) {
 			if (Xi[l] == 1) {
 				(*tm).ta_state[j][k][l] += ((*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
@@ -183,7 +193,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, i
 static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k) {
 	int action_include;
 
-	if ((*tm).clause_component_output[j][k] == 1) {
+	if ((*tm).clause_output[j] > 0 && (*tm).clause_component_output[j][k] == 1) {
 		for (int l = 0; l < (FEATURES - 1); l++) { 
 			action_include = action((*tm).ta_state[j][k][l]);
 			(*tm).ta_state[j][k][l] += (action_include == 0 && (*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
@@ -219,12 +229,13 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*************************************/
 
 	// Calculate feedback to clauses
-	for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-		(*tm).feedback_to_components[0][k] = (2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
-	}
 
-	for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-		(*tm).feedback_to_components[1][k] = -1*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+	for (int j = 0; j < CLAUSES; j++) {
+		int sign = 1 - 2 * (j & 1);
+
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+			(*tm).feedback_to_components[j][k] = sign*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+		}
 	}
 	
 	/*********************************/
