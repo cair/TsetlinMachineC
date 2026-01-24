@@ -26,7 +26,8 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 15
-#define FEATURES (6 + 18)
+#define FEATURES 12
+#define LITERALS (FEATURES*2)
 #define CLAUSES 2
 #define CLAUSE_COMPONENTS 5
 #define NUMBER_OF_STATES 100
@@ -36,8 +37,8 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSES][CLAUSE_COMPONENTS][FEATURES]; // The clause components, unique per clause (later we can introduce sharing)
-	int ta_state_layer_two[CLAUSES][3]; // Three automata, one for x_3, one for \lnot x_3, and one for c_1^* OR c_2^*...
+	int ta_state[CLAUSES][CLAUSE_COMPONENTS][LITERALS]; // The clause components, unique per clause (later we can introduce sharing)
+	int ta_state_layer_two[CLAUSES][2]; // Three automata, one for x_3, one for \lnot x_3, and one for c_1^* OR c_2^*...
 
 	int clause_component_output[CLAUSES][CLAUSE_COMPONENTS]; // Here, we count how many times the rolled out clauses are True.
 

@@ -51,15 +51,23 @@ void tm_initialize(struct TsetlinMachine *tm)
 {
 	for (int j = 0; j < CLAUSES; j++) {
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
-			for (int l = 0; l < FEATURES/2; l++) {
+			for (int l = 0; l < FEATURES; l++) {
 				if (1.0 * rand()/RAND_MAX <= 0.5) {
 					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES;
-					(*tm).ta_state[j][k][l + FEATURES / 2] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[j][k][l + FEATURES] = NUMBER_OF_STATES + 1;
 				} else {
 					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES + 1;
-					(*tm).ta_state[j][k][l + FEATURES / 2] = NUMBER_OF_STATES;
+					(*tm).ta_state[j][k][l + FEATURES] = NUMBER_OF_STATES;
 				}
 			}
+		}
+
+		if (1.0 * rand()/RAND_MAX <= 0.5) {
+			(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES;
+			(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES + 1;
+		} else {
+			(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES + 1;
+			(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES;
 		}
 	}
 }
@@ -83,15 +91,15 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
-			for (int l = 0; l < FEATURES / 2; l++) {
+			for (int l = 0; l < FEATURES - 1; l++) {
 				action_include = action((*tm).ta_state[j][k][l]);
 				if ((action_include == 1 && Xi[l] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;
 					break;
 				}
 
-				action_include = action((*tm).ta_state[j][k][l + FEATURES / 2]);
-				if ((action_include == 1 && Xi[l + FEATURES / 2] == 0)) {
+				action_include = action((*tm).ta_state[j][k][l + FEATURES]);
+				if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;
 					break;
 				}
@@ -106,7 +114,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		// }
 
 		// action_include = action((*tm).ta_state_layer_two[j][1]);
-		// if ((action_include == 1 && Xi[2 + FEATURES / 2] == 0)) {
+		// if ((action_include == 1 && Xi[2 + FEATURES] == 0)) {
 		// 	(*tm).clause_output[j] = 0; // Resets vote sum
 		// }
 
@@ -145,15 +153,23 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k, float s)
 {
 	if ((*tm).clause_component_output[j][k] == 0)	{
-		for (int l = 0; l < FEATURES; l++) {
-			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);								
+		for (int l = 0; l < FEATURES - 1; l++) {
+			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
+
+			(*tm).ta_state[j][k][l + FEATURES] -= ((*tm).ta_state[j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
 	} else if ((*tm).clause_component_output[j][k] == 1) {					
-		for (int l = 0; l < FEATURES; l++) {
+		for (int l = 0; l < FEATURES - 1; l++) {
 			if (Xi[l] == 1) {
 				(*tm).ta_state[j][k][l] += ((*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
-			} else if (Xi[l] == 0) {				
+			} else {				
 				(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			}
+
+			if (Xi[l + FEATURES] == 1) {
+				(*tm).ta_state[j][k][l + FEATURES] += ((*tm).ta_state[j][k][l + FEATURES] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+			} else {				
+				(*tm).ta_state[j][k][l + FEATURES] -= ((*tm).ta_state[j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
@@ -168,10 +184,12 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, 
 	int action_include;
 
 	if ((*tm).clause_component_output[j][k] == 1) {
-		for (int l = 0; l < FEATURES; l++) { 
+		for (int l = 0; l < (FEATURES - 1); l++) { 
 			action_include = action((*tm).ta_state[j][k][l]);
-
 			(*tm).ta_state[j][k][l] += (action_include == 0 && (*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
+
+			action_include = action((*tm).ta_state[j][k][l + FEATURES]);
+			(*tm).ta_state[j][k][l + FEATURES] += (action_include == 0 && (*tm).ta_state[j][k][l + FEATURES] < NUMBER_OF_STATES*2) && (Xi[l + FEATURES] == 0);
 		}
 	}
 }

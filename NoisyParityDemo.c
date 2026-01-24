@@ -7,10 +7,10 @@
 
 #define NUMBER_OF_EXAMPLES 20000
 
-int X_train[NUMBER_OF_EXAMPLES][FEATURES];
+int X_train[NUMBER_OF_EXAMPLES][LITERALS];
 int y_train[NUMBER_OF_EXAMPLES];
 
-int X_test[NUMBER_OF_EXAMPLES][FEATURES];
+int X_test[NUMBER_OF_EXAMPLES][LITERALS];
 int y_test[NUMBER_OF_EXAMPLES];
 
 void read_file(void)
@@ -32,9 +32,9 @@ void read_file(void)
 		getline(&line, &len, fp);
 
 		token = strtok(line, s);
-		for (int j = 0; j < FEATURES / 2; j++) {
+		for (int j = 0; j < FEATURES; j++) {
 			X_train[i][j] = atoi(token);
-			X_train[i][j + FEATURES / 2] = 1 - X_train[i][j];
+			X_train[i][j + FEATURES] = 1 - X_train[i][j];
 			token=strtok(NULL,s);
 		}
 		y_train[i] = atoi(token);
@@ -50,9 +50,9 @@ void read_file(void)
 		getline(&line, &len, fp);
 
 		token = strtok(line, s);
-		for (int j = 0; j < FEATURES / 2; j++) {
+		for (int j = 0; j < FEATURES; j++) {
 			X_test[i][j] = atoi(token);
-			X_test[i][j + FEATURES / 2] = 1 - X_test[i][j];
+			X_test[i][j + FEATURES] = 1 - X_test[i][j];
 
 			token=strtok(NULL,s);
 		}
