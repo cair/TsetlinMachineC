@@ -51,11 +51,13 @@ void tm_initialize(struct TsetlinMachine *tm)
 {
 	for (int j = 0; j < CLAUSES; j++) {
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
-			for (int l = 0; l < FEATURES; l++) {
+			for (int l = 0; l < FEATURES/2; l++) {
 				if (1.0 * rand()/RAND_MAX <= 0.5) {
 					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES;
+					(*tm).ta_state[j][k][l + FEATURES / 2] = NUMBER_OF_STATES + 1;
 				} else {
 					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[j][k][l + FEATURES / 2] = NUMBER_OF_STATES;
 				}
 			}
 		}
