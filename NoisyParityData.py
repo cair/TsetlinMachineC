@@ -2,7 +2,7 @@ import numpy as np
 
 
 noise = 0.4
-number_of_variables = 12
+number_of_variables = 3
 number_of_examples = 20000
 parity_values = 2
 
