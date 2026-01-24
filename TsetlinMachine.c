@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2019 Ole-Christoffer Granmo
+Copyright (c) 2026 Ole-Christoffer Granmo and the University of Agder
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -49,14 +49,16 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 void tm_initialize(struct TsetlinMachine *tm)
 {
-	for (int j = 0; j < CLAUSES; j++) {				
-		for (int k = 0; k < FEATURES; k++) {
-			if (1.0 * rand()/RAND_MAX <= 0.5) {
-				(*tm).ta_state[j][k][0] = NUMBER_OF_STATES;
-				(*tm).ta_state[j][k][1] = NUMBER_OF_STATES + 1; 
-			} else {
-				(*tm).ta_state[j][k][0] = NUMBER_OF_STATES + 1;
-				(*tm).ta_state[j][k][1] = NUMBER_OF_STATES; // Deviation, should be random
+	for (int j = 0; j < CLAUSES; j++) {
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
+			for (int l = 0; l < FEATURES/2; l++) {
+				if (1.0 * rand()/RAND_MAX <= 0.5) {
+					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES;
+					(*tm).ta_state[j][k][l + FEATURES / 2] = NUMBER_OF_STATES + 1;
+				} else {
+					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[j][k][l + FEATURES / 2] = NUMBER_OF_STATES;
+				}
 			}
 		}
 	}
@@ -73,26 +75,48 @@ static inline int action(int state)
 
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
-	int j, k;
-	int action_include, action_include_negated;
-	int all_exclude;
+	int action_include;
 
-	for (j = 0; j < CLAUSES; j++) {
-		(*tm).clause_output[j] = 1;
-		all_exclude = 1;
-		for (k = 0; k < FEATURES; k++) {
-			action_include = action((*tm).ta_state[j][k][0]);
-			action_include_negated = action((*tm).ta_state[j][k][1]);
+	for (int j = 0; j < CLAUSES; j++) {
+		(*tm).clause_output[j] = 0; // Here, we count how many times the rolled out clauses are True.
 
-			all_exclude = all_exclude && !(action_include == 1 || action_include_negated == 1);
+		// Go through the clause components, one needs to be True to make the first part of the clause True.
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
+			for (int l = 0; l < 12; l++) {
+				action_include = action((*tm).ta_state[j][k][l]);
+				if ((action_include == 1 && Xi[l] == 0)) {
+					(*tm).clause_component_output[j][k] = 0;
+					break;
+				}
 
-			if ((action_include == 1 && Xi[k] == 0) || (action_include_negated == 1 && Xi[k] == 1)) {
-				(*tm).clause_output[j] = 0;
-				break;
+				action_include = action((*tm).ta_state[j][k][l + FEATURES / 2]);
+				if ((action_include == 1 && Xi[l + FEATURES / 2] == 0)) {
+					(*tm).clause_component_output[j][k] = 0;
+					break;
+				}
 			}
+
+			(*tm).clause_output[j] += (*tm).clause_component_output[j][k]; // Add one vote her if clause component is True.
 		}
 
-		(*tm).clause_output[j] = (*tm).clause_output[j] && !(predict == PREDICT && all_exclude == 1);
+		// Store (x_1 OR x_2) as a feature... (do not negate, yet...)
+		Xi[FEATURES] = ((*tm).clause_output[j] > 0);
+
+		// action_include = action((*tm).ta_state_layer_two[j][0]);
+		// if ((action_include == 1 && Xi[2] == 0)) {
+		// 	(*tm).clause_output[j] = 0; // Resets vote sum
+		// }
+
+		// action_include = action((*tm).ta_state_layer_two[j][1]);
+		// if ((action_include == 1 && Xi[2 + FEATURES / 2] == 0)) {
+		// 	(*tm).clause_output[j] = 0; // Resets vote sum
+		// }
+
+		// action_include = action((*tm).ta_state_layer_two[j][2]);
+		// if ((action_include == 1 && Xi[FEATURES] == 0)) {
+		// 	(*tm).clause_output[j] = 0; // Resets vote sum
+		// }
 	}
 }
 
@@ -112,33 +136,27 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 }
 
 /* Get the state of a specific automaton, indexed by clause, feature, and automaton type (include/include negated). */
-int tm_get_state(struct TsetlinMachine *tm, int clause, int feature, int automaton_type)
+int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, int feature)
 {
-	return (*tm).ta_state[clause][feature][automaton_type];
+	return (*tm).ta_state[clause][clause_component][feature];
 }
 
 /*************************************************/
 /*** Type I Feedback (Combats False Negatives) ***/
 /*************************************************/
 
-static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, float s)
+static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k, float s)
 {
-	if ((*tm).clause_output[j] == 0)	{
-		for (int k = 0; k < FEATURES; k++) {
-			(*tm).ta_state[j][k][0] -= ((*tm).ta_state[j][k][0] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-								
-			(*tm).ta_state[j][k][1] -= ((*tm).ta_state[j][k][1] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+	if ((*tm).clause_component_output[j][k] == 0)	{
+		for (int l = 0; l < FEATURES; l++) {
+			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);								
 		}
-	} else if ((*tm).clause_output[j] == 1) {					
-		for (int k = 0; k < FEATURES; k++) {
-			if (Xi[k] == 1) {
-				(*tm).ta_state[j][k][0] += ((*tm).ta_state[j][k][0] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
-
-				(*tm).ta_state[j][k][1] -= ((*tm).ta_state[j][k][1] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
-			} else if (Xi[k] == 0) {
-				(*tm).ta_state[j][k][1] += ((*tm).ta_state[j][k][1] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
-				
-				(*tm).ta_state[j][k][0] -= ((*tm).ta_state[j][k][0] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+	} else if ((*tm).clause_component_output[j][k] == 1) {					
+		for (int l = 0; l < FEATURES; l++) {
+			if (Xi[l] == 1) {
+				(*tm).ta_state[j][k][l] += ((*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+			} else if (Xi[l] == 0) {				
+				(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
@@ -149,17 +167,14 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, f
 /*** Type II Feedback (Combats False Positives) ***/
 /**************************************************/
 
-static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j) {
+static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k) {
 	int action_include;
-	int action_include_negated;
 
-	if ((*tm).clause_output[j] == 1) {
-		for (int k = 0; k < FEATURES; k++) { 
-			action_include = action((*tm).ta_state[j][k][0]);
-			action_include_negated = action((*tm).ta_state[j][k][1]);
+	if ((*tm).clause_component_output[j][k] == 1) {
+		for (int l = 0; l < FEATURES; l++) { 
+			action_include = action((*tm).ta_state[j][k][l]);
 
-			(*tm).ta_state[j][k][0] += (action_include == 0 && (*tm).ta_state[j][k][0] < NUMBER_OF_STATES*2) && (Xi[k] == 0);
-			(*tm).ta_state[j][k][1] += (action_include_negated == 0 && (*tm).ta_state[j][k][1] < NUMBER_OF_STATES*2) && (Xi[k] == 1);
+			(*tm).ta_state[j][k][l] += (action_include == 0 && (*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
 		}
 	}
 }
@@ -189,8 +204,12 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*************************************/
 
 	// Calculate feedback to clauses
-	for (int j = 0; j < CLAUSES; j++) {
-		(*tm).feedback_to_clauses[j] = (2*target-1)*(1 - 2 * (j & 1))*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+	for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+		(*tm).feedback_to_components[0][k] = (2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+	}
+
+	for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+		(*tm).feedback_to_components[1][k] = -1*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
 	}
 	
 	/*********************************/
@@ -198,10 +217,12 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*********************************/
 
 	for (int j = 0; j < CLAUSES; j++) {
-		if ((*tm).feedback_to_clauses[j] > 0) {
-			type_i_feedback(tm, Xi, j, s);
-		} else if ((*tm).feedback_to_clauses[j] < 0) {
-			type_ii_feedback(tm, Xi, j);
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+			if ((*tm).feedback_to_components[j][k] > 0) {
+				type_i_feedback(tm, Xi, j, k, s);
+			} else if ((*tm).feedback_to_components[j][k] < 0) {
+				type_ii_feedback(tm, Xi, j, k);
+			}
 		}
 	}
 }
