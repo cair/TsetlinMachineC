@@ -2,9 +2,9 @@ import numpy as np
 
 
 noise = 0.4
-number_of_variables = 12
+number_of_variables = 3
 number_of_examples = 20000
-parity_values = 3
+parity_values = 2
 
 #X_train = np.zeros((number_of_examples, number_of_variables), dtype=np.uint32)
 

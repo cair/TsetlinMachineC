@@ -61,6 +61,14 @@ void tm_initialize(struct TsetlinMachine *tm)
 				}
 			}
 		}
+
+		for (int l = 0; l < 3; l++) {
+			if (1.0 * rand()/RAND_MAX <= 0.5) {
+				(*tm).ta_state_layer_two[j][l] = NUMBER_OF_STATES;
+			} else {
+				(*tm).ta_state_layer_two[j][l] = NUMBER_OF_STATES + 1;
+			}
+		}
 	}
 }
 
@@ -83,7 +91,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
-			for (int l = 0; l < 12; l++) {
+			for (int l = 0; l < 2; l++) {
 				action_include = action((*tm).ta_state[j][k][l]);
 				if ((action_include == 1 && Xi[l] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;
@@ -101,12 +109,17 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		}
 
 		// Store (x_1 OR x_2) as a feature... (do not negate, yet...)
-		Xi[FEATURES] = ((*tm).clause_output[j] > 0);
+		//Xi[FEATURES] = ((*tm).clause_output[j] > 0);
 
-		// action_include = action((*tm).ta_state_layer_two[j][0]);
-		// if ((action_include == 1 && Xi[2] == 0)) {
-		// 	(*tm).clause_output[j] = 0; // Resets vote sum
-		// }
+		action_include = action((*tm).ta_state_layer_two[j][0]);
+		if ((action_include == 1 && Xi[2] == 0)) {
+			(*tm).clause_output[j] = 0; // Resets vote sum
+		}
+
+		action_include = action((*tm).ta_state_layer_two[j][1]);
+		if ((action_include == 1 && Xi[2 + FEATURES / 2] == 0)) {
+			(*tm).clause_output[j] = 0; // Resets vote sum
+		}
 
 		// action_include = action((*tm).ta_state_layer_two[j][1]);
 		// if ((action_include == 1 && Xi[2 + FEATURES / 2] == 0)) {
@@ -147,17 +160,42 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k, float s)
 {
-	if ((*tm).clause_component_output[j][k] == 0)	{
-		for (int l = 0; l < FEATURES; l++) {
-			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);								
+	if ((*tm).clause_output[j] == 0 || (*tm).clause_component_output[j][k] == 0) {
+		for (int l = 0; l < 2; l++) {
+			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+
+			(*tm).ta_state[j][k][l + FEATURES / 2] -= ((*tm).ta_state[j][k][l + FEATURES / 2] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);								
 		}
-	} else if ((*tm).clause_component_output[j][k] == 1) {					
-		for (int l = 0; l < FEATURES; l++) {
+	} else {					
+		for (int l = 0; l < 2; l++) {
 			if (Xi[l] == 1) {
 				(*tm).ta_state[j][k][l] += ((*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else if (Xi[l] == 0) {				
 				(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
+
+			if (Xi[l + FEATURES / 2] == 1) {
+				(*tm).ta_state[j][k][l + FEATURES / 2] += ((*tm).ta_state[j][k][l + FEATURES / 2] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+			} else if (Xi[l] == 0) {				
+				(*tm).ta_state[j][k][l + FEATURES / 2] -= ((*tm).ta_state[j][k][l + FEATURES / 2] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+			}
+		}
+	}
+
+	if ((*tm).clause_output[j] == 0) {
+		(*tm).ta_state_layer_two[j][0] -= ((*tm).ta_state_layer_two[j][0] > 1) && (1.0*rand()/RAND_MAX <= 1.0);
+		(*tm).ta_state_layer_two[j][1] -= ((*tm).ta_state_layer_two[j][1] > 1) && (1.0*rand()/RAND_MAX <= 1.0);
+	} else {					
+		if (Xi[2] == 1) {
+			(*tm).ta_state_layer_two[j][0] += ((*tm).ta_state_layer_two[j][0] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+		} else {				
+			(*tm).ta_state_layer_two[j][0] -= ((*tm).ta_state_layer_two[j][0] > 1) && (1.0*rand()/RAND_MAX <= 1.0);
+		}
+
+		if (Xi[2 + FEATURES / 2] == 1) {
+			(*tm).ta_state_layer_two[j][1] += ((*tm).ta_state_layer_two[j][1] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+		} else {				
+			(*tm).ta_state_layer_two[j][1] -= ((*tm).ta_state_layer_two[j][1] > 1) && (1.0*rand()/RAND_MAX <= 1.0);
 		}
 	}
 }
@@ -217,12 +255,11 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	/*********************************/
 
 	for (int j = 0; j < CLAUSES; j++) {
-		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-			if ((*tm).feedback_to_components[j][k] > 0) {
-				type_i_feedback(tm, Xi, j, k, s);
-			} else if ((*tm).feedback_to_components[j][k] < 0) {
-				type_ii_feedback(tm, Xi, j, k);
-			}
+		int k = rand() % CLAUSE_COMPONENTS;
+		if ((*tm).feedback_to_components[j][k] > 0) {
+			type_i_feedback(tm, Xi, j, k, s);
+		} else if ((*tm).feedback_to_components[j][k] < 0) {
+			type_ii_feedback(tm, Xi, j, k);
 		}
 	}
 }
