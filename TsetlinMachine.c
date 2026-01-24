@@ -81,7 +81,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
-			for (int l = 0; l < 2; l++) {
+			for (int l = 0; l < 12; l++) {
 				action_include = action((*tm).ta_state[j][k][l]);
 				if ((action_include == 1 && Xi[l] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;

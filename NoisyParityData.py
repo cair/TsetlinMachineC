@@ -1,12 +1,15 @@
 import numpy as np
 
 
-noise = 0.05
-number_of_variables = 3
+noise = 0.4
+number_of_variables = 12
 number_of_examples = 20000
 
-X_train = np.zeros((number_of_examples, number_of_variables), dtype=np.uint32)
+#X_train = np.zeros((number_of_examples, number_of_variables), dtype=np.uint32)
+
+X_train = np.random.randint(2, size=(number_of_examples, number_of_variables), dtype=np.uint32)
 Y_train = np.zeros(number_of_examples, dtype=np.uint32)
+
 for i in range(number_of_examples):
 	true_count = 0
 	for j in range(number_of_variables):
@@ -18,7 +21,8 @@ for i in range(number_of_examples):
 Y_train = np.where(np.random.rand(number_of_examples) <= noise, 1-Y_train, Y_train) # Adds noise
 np.savetxt("NoisyParityTrainingData.txt", np.append(X_train, Y_train.reshape((number_of_examples, 1)), axis=1), fmt='%d')
 
-X_test = np.zeros((number_of_examples, number_of_variables), dtype=np.uint32)
+#X_test = np.zeros((number_of_examples, number_of_variables), dtype=np.uint32)
+X_test = np.random.randint(2, size=(number_of_examples, number_of_variables), dtype=np.uint32)
 Y_test = np.zeros(number_of_examples, dtype=np.uint32)
 for i in range(number_of_examples):
 	true_count = 0
