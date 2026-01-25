@@ -73,7 +73,7 @@ int main(void)
 	for (int i = 0; i < 100; i++) {
 		mc_tm_initialize(mc_tsetlin_machine);
 		clock_t start_total = clock();
-		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 1000, 8.1);
+		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 2000, 8.1);
 		clock_t end_total = clock();
 		double time_used = ((double) (end_total - start_total)) / CLOCKS_PER_SEC;
 

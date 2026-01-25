@@ -25,10 +25,10 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 60
+#define THRESHOLD 150
 #define FEATURES 12
 #define LITERALS (FEATURES*2)
-#define CLAUSES 4
+#define CLAUSES 10
 #define CLAUSE_COMPONENTS 10
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0

@@ -62,7 +62,15 @@ void tm_initialize(struct TsetlinMachine *tm)
 			}
 		}
 
-		if (1.0 * rand()/RAND_MAX <= 0.5) {
+		// if (1.0 * rand()/RAND_MAX <= 0.5) {
+		// 	(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES;
+		// 	(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES + 1;
+		// } else {
+		// 	(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES + 1;
+		// 	(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES;
+		// }
+
+		if (j < CLAUSES / 2) {
 			(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES;
 			(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES + 1;
 		} else {
@@ -108,30 +116,25 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 			(*tm).clause_output[j] += (*tm).clause_component_output[j][k]; // Add one vote her if clause component is True.
 		}
 
-		if (Xi[FEATURES-1] == 1) {
-			if (j < CLAUSES / 2) {
-				(*tm).clause_output[j] = 0;
-			}
-		} else {
-			if (j >= CLAUSES / 2) {
-				(*tm).clause_output[j] = 0;
-			}
+		// if (Xi[FEATURES-1] == 1) {
+		// 	if (j < CLAUSES / 2) {
+		// 		(*tm).clause_output[j] = 0;
+		// 	}
+		// } else {
+		// 	if (j >= CLAUSES / 2) {
+		// 		(*tm).clause_output[j] = 0;
+		// 	}
+		// }
+
+		action_include = action((*tm).ta_state_layer_two[j][0]);
+		if ((action_include == 1 && Xi[FEATURES-1] == 0)) {
+			(*tm).clause_output[j] = 0; // Resets vote sum
 		}
 
-		// action_include = action((*tm).ta_state_layer_two[j][0]);
-		// if ((action_include == 1 && Xi[2] == 0)) {
-		// 	(*tm).clause_output[j] = 0; // Resets vote sum
-		// }
-
-		// action_include = action((*tm).ta_state_layer_two[j][1]);
-		// if ((action_include == 1 && Xi[2 + FEATURES] == 0)) {
-		// 	(*tm).clause_output[j] = 0; // Resets vote sum
-		// }
-
-		// action_include = action((*tm).ta_state_layer_two[j][2]);
-		// if ((action_include == 1 && Xi[FEATURES] == 0)) {
-		// 	(*tm).clause_output[j] = 0; // Resets vote sum
-		// }
+		action_include = action((*tm).ta_state_layer_two[j][1]);
+		if ((action_include == 1 && Xi[LITERALS-1] == 0)) {
+			(*tm).clause_output[j] = 0; // Resets vote sum
+		}
 	}
 }
 
@@ -183,6 +186,23 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, i
 			}
 		}
 	}
+
+	// if ((*tm).clause_output[j] == 0) {
+	// 	(*tm).ta_state_layer_two[j][0] -= ((*tm).ta_state_layer_two[j][0] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));	
+	// 	(*tm).ta_state_layer_two[j][1] -= ((*tm).ta_state_layer_two[j][1] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));
+	// } else {
+	// 	if (Xi[FEATURES - 1] == 1) {
+	// 		(*tm).ta_state_layer_two[j][0] += ((*tm).ta_state_layer_two[j][0] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s) * (1.0 / CLAUSE_COMPONENTS);
+	// 	} else {				
+	// 		(*tm).ta_state_layer_two[j][0] -= ((*tm).ta_state_layer_two[j][0] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));
+	// 	}
+
+	// 	if (Xi[LITERALS - 1] == 1) {
+	// 		(*tm).ta_state_layer_two[j][1] += ((*tm).ta_state_layer_two[j][1] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s * (1.0 / CLAUSE_COMPONENTS));
+	// 	} else {				
+	// 		(*tm).ta_state_layer_two[j][1] -= ((*tm).ta_state_layer_two[j][1] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));
+	// 	}
+	// }
 }
 
 
@@ -202,6 +222,14 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, 
 			(*tm).ta_state[j][k][l + FEATURES] += (action_include == 0 && (*tm).ta_state[j][k][l + FEATURES] < NUMBER_OF_STATES*2) && (Xi[l + FEATURES] == 0);
 		}
 	}
+
+	// if ((*tm).clause_output[j] > 0) {		
+	// 	action_include = action((*tm).ta_state_layer_two[j][0]);
+	// 	(*tm).ta_state_layer_two[j][0] += (action_include == 0 && (*tm).ta_state_layer_two[j][0] < NUMBER_OF_STATES*2) && (Xi[FEATURES - 1] == 0) && rand() < 1.0 /CLAUSE_COMPONENTS;
+
+	// 	action_include = action((*tm).ta_state_layer_two[j][1]);
+	// 	(*tm).ta_state_layer_two[j][1] += (action_include == 0 && (*tm).ta_state_layer_two[j][1] < NUMBER_OF_STATES*2) && (Xi[LITERALS - 1] == 0) && rand() < 1.0 /CLAUSE_COMPONENTS;
+	// }
 }
 
 /******************************************/
