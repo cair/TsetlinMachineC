@@ -62,6 +62,20 @@ void tm_initialize(struct TsetlinMachine *tm)
 			}
 		}
 	}
+
+	for (int j = 0; j < CLAUSES; j++) {
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
+			for (int l = 0; l < FEATURES; l++) {
+				if (1.0 * rand()/RAND_MAX <= 0.5) {
+					(*tm).ta_state[j][1][k][l] = NUMBER_OF_STATES;
+					(*tm).ta_state[j][1][k][l + FEATURES] = NUMBER_OF_STATES + 1;
+				} else {
+					(*tm).ta_state[j][1][k][l] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[j][1][k][l + FEATURES] = NUMBER_OF_STATES;
+				}
+			}
+		}
+	}
 }
 
 /* Translates automata state to action */
@@ -81,24 +95,49 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		(*tm).clause_output[j] = 0; // Here, we count how many times the rolled out clauses are True.
 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
+		
+		int local_clause_output_1 = 0;
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
+			(*tm).clause_component_output[j][0][k] = 1; // One False literal makes the clause component False
 			for (int l = 0; l < FEATURES / 2; l++) {
 				action_include = action((*tm).ta_state[j][0][k][l]);
 				if ((action_include == 1 && Xi[l] == 0)) {
-					(*tm).clause_component_output[j][k] = 0;
+					(*tm).clause_component_output[j][0][k] = 0;
 					break;
 				}
 
 				action_include = action((*tm).ta_state[j][0][k][l + FEATURES]);
 				if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
-					(*tm).clause_component_output[j][k] = 0;
+					(*tm).clause_component_output[j][0][k] = 0;
 					break;
 				}
 			}
 
-			(*tm).clause_output[j] += (*tm).clause_component_output[j][k]; // Add one vote her if clause component is True.
+			local_clause_output_1 += (*tm).clause_component_output[j][0][k]; // Add one vote her if clause component is True.
 		}
+
+		int local_clause_output_2 = 0;
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+			(*tm).clause_component_output[j][1][k] = 1; // One False literal makes the clause component False
+			for (int l = FEATURES / 2; l < FEATURES; l++) {
+				action_include = action((*tm).ta_state[j][1][k][l]);
+				if ((action_include == 1 && Xi[l] == 0)) {
+					(*tm).clause_component_output[j][1][k] = 0;
+					break;
+				}
+
+				action_include = action((*tm).ta_state[j][1][k][l + FEATURES]);
+				if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
+					(*tm).clause_component_output[j][1][k] = 0;
+					break;
+				}
+			}
+
+			local_clause_output_2 += (*tm).clause_component_output[j][0][k]; // Add one vote her if clause component is True.
+		}
+
+		local_clause_output_2 = 1;
+		(*tm).clause_output[j] = local_clause_output_1 * local_clause_output_2;
 
 		if (Xi[FEATURES-1] == 1 && Xi[FEATURES-2] == 1) {
 			if (j < 3 * CLAUSES / 4) {
@@ -146,26 +185,26 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 /*** Type I Feedback (Combats False Negatives) ***/
 /*************************************************/
 
-static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k, float s)
+static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int v, int k, float s)
 {
-	if ((*tm).clause_output[j] == 0 || (*tm).clause_component_output[j][k] == 0)	{
+	if ((*tm).clause_output[j] == 0 || (*tm).clause_component_output[j][v][k] == 0)	{
 		for (int l = 0; l < FEATURES / 2; l++) {
-			(*tm).ta_state[j][0][k][l] -= ((*tm).ta_state[j][0][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
+			(*tm).ta_state[j][v][k][l] -= ((*tm).ta_state[j][v][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
 
-			(*tm).ta_state[j][0][k][l + FEATURES] -= ((*tm).ta_state[j][0][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
+			(*tm).ta_state[j][v][k][l + FEATURES] -= ((*tm).ta_state[j][v][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
 	} else {					
 		for (int l = 0; l < FEATURES / 2; l++) {
 			if (Xi[l] == 1) {
-				(*tm).ta_state[j][0][k][l] += ((*tm).ta_state[j][0][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+				(*tm).ta_state[j][v][k][l] += ((*tm).ta_state[j][v][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
-				(*tm).ta_state[j][0][k][l] -= ((*tm).ta_state[j][0][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[j][v][k][l] -= ((*tm).ta_state[j][v][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 
 			if (Xi[l + FEATURES] == 1) {
-				(*tm).ta_state[j][0][k][l + FEATURES] += ((*tm).ta_state[j][0][k][l + FEATURES] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+				(*tm).ta_state[j][v][k][l + FEATURES] += ((*tm).ta_state[j][v][k][l + FEATURES] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
-				(*tm).ta_state[j][0][k][l + FEATURES] -= ((*tm).ta_state[j][0][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[j][v][k][l + FEATURES] -= ((*tm).ta_state[j][v][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
@@ -176,16 +215,16 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, i
 /*** Type II Feedback (Combats False Positives) ***/
 /**************************************************/
 
-static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k) {
+static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, int v, int k) {
 	int action_include;
 
-	if ((*tm).clause_output[j] > 0 && (*tm).clause_component_output[j][k] == 1) {
+	if ((*tm).clause_output[j] > 0 && (*tm).clause_component_output[j][v][k] == 1) {
 		for (int l = 0; l < (FEATURES / 2); l++) { 
-			action_include = action((*tm).ta_state[j][0][k][l]);
-			(*tm).ta_state[j][0][k][l] += (action_include == 0 && (*tm).ta_state[j][0][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
+			action_include = action((*tm).ta_state[j][v][k][l]);
+			(*tm).ta_state[j][v][k][l] += (action_include == 0 && (*tm).ta_state[j][v][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
 
-			action_include = action((*tm).ta_state[j][0][k][l + FEATURES]);
-			(*tm).ta_state[j][0][k][l + FEATURES] += (action_include == 0 && (*tm).ta_state[j][0][k][l + FEATURES] < NUMBER_OF_STATES*2) && (Xi[l + FEATURES] == 0);
+			action_include = action((*tm).ta_state[j][v][k][l + FEATURES]);
+			(*tm).ta_state[j][v][k][l + FEATURES] += (action_include == 0 && (*tm).ta_state[j][v][k][l + FEATURES] < NUMBER_OF_STATES*2) && (Xi[l + FEATURES] == 0);
 		}
 	}
 }
@@ -220,7 +259,11 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 		int sign = 1 - 2 * (j & 1);
 
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-			(*tm).feedback_to_components[j][k] = sign*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+			(*tm).feedback_to_components[j][0][k] = sign*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+		}
+
+		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+			(*tm).feedback_to_components[j][1][k] = sign*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
 		}
 	}
 	
@@ -230,10 +273,17 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 
 	for (int j = 0; j < CLAUSES; j++) {
 		int k = rand() % CLAUSE_COMPONENTS;
-		if ((*tm).feedback_to_components[j][k] > 0) {
-			type_i_feedback(tm, Xi, j, k, s);
-		} else if ((*tm).feedback_to_components[j][k] < 0) {
-			type_ii_feedback(tm, Xi, j, k);
+		if ((*tm).feedback_to_components[j][0][k] > 0) {
+			type_i_feedback(tm, Xi, j, 0, k, s);
+		} else if ((*tm).feedback_to_components[j][0][k] < 0) {
+			type_ii_feedback(tm, Xi, j, 0, k);
+		}
+
+		k = rand() % CLAUSE_COMPONENTS;
+		if ((*tm).feedback_to_components[j][1][k] > 0) {
+			type_i_feedback(tm, Xi, j, 1, k, s);
+		} else if ((*tm).feedback_to_components[j][1][k] < 0) {
+			type_ii_feedback(tm, Xi, j, 1, k);
 		}
 	}
 }

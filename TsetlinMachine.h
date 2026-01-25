@@ -39,11 +39,11 @@ https://arxiv.org/abs/1804.01508
 struct TsetlinMachine { 
 	int ta_state[CLAUSES][2][CLAUSE_COMPONENTS][LITERALS]; // The clause components, unique per clause (later we can introduce sharing)
 
-	int clause_component_output[CLAUSES][CLAUSE_COMPONENTS]; // Here, we count how many times the rolled out clauses are True.
+	int clause_component_output[CLAUSES][2][CLAUSE_COMPONENTS]; // Here, we count how many times the rolled out clauses are True.
 
 	int clause_output[CLAUSES]; // Here, we count how many times the rolled out clauses are True.
 
-	int feedback_to_components[CLAUSES][CLAUSE_COMPONENTS];
+	int feedback_to_components[CLAUSES][2][CLAUSE_COMPONENTS];
 
 	int feedback_to_clauses[CLAUSES]; // Decides which clause to update, but the clause sum is calculated after roll out.
 };
