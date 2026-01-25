@@ -25,7 +25,7 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 30
+#define THRESHOLD 100
 #define FEATURES 12
 #define LITERALS (FEATURES*2)
 #define CLAUSES 8
