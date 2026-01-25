@@ -53,29 +53,13 @@ void tm_initialize(struct TsetlinMachine *tm)
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
 			for (int l = 0; l < FEATURES; l++) {
 				if (1.0 * rand()/RAND_MAX <= 0.5) {
-					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES;
-					(*tm).ta_state[j][k][l + FEATURES] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[j][0][k][l] = NUMBER_OF_STATES;
+					(*tm).ta_state[j][0][k][l + FEATURES] = NUMBER_OF_STATES + 1;
 				} else {
-					(*tm).ta_state[j][k][l] = NUMBER_OF_STATES + 1;
-					(*tm).ta_state[j][k][l + FEATURES] = NUMBER_OF_STATES;
+					(*tm).ta_state[j][0][k][l] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[j][0][k][l + FEATURES] = NUMBER_OF_STATES;
 				}
 			}
-		}
-
-		// if (1.0 * rand()/RAND_MAX <= 0.5) {
-		// 	(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES;
-		// 	(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES + 1;
-		// } else {
-		// 	(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES + 1;
-		// 	(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES;
-		// }
-
-		if (j < CLAUSES / 2) {
-			(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES;
-			(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES + 1;
-		} else {
-			(*tm).ta_state_layer_two[j][0] = NUMBER_OF_STATES + 1;
-			(*tm).ta_state_layer_two[j][1] = NUMBER_OF_STATES;
 		}
 	}
 }
@@ -100,13 +84,13 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
 			for (int l = 0; l < FEATURES - 1; l++) {
-				action_include = action((*tm).ta_state[j][k][l]);
+				action_include = action((*tm).ta_state[j][0][k][l]);
 				if ((action_include == 1 && Xi[l] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;
 					break;
 				}
 
-				action_include = action((*tm).ta_state[j][k][l + FEATURES]);
+				action_include = action((*tm).ta_state[j][0][k][l + FEATURES]);
 				if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;
 					break;
@@ -116,24 +100,14 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 			(*tm).clause_output[j] += (*tm).clause_component_output[j][k]; // Add one vote her if clause component is True.
 		}
 
-		// if (Xi[FEATURES-1] == 1) {
-		// 	if (j < CLAUSES / 2) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else {
-		// 	if (j >= CLAUSES / 2) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// }
-
-		action_include = action((*tm).ta_state_layer_two[j][0]);
-		if ((action_include == 1 && Xi[FEATURES-1] == 0)) {
-			(*tm).clause_output[j] = 0; // Resets vote sum
-		}
-
-		action_include = action((*tm).ta_state_layer_two[j][1]);
-		if ((action_include == 1 && Xi[LITERALS-1] == 0)) {
-			(*tm).clause_output[j] = 0; // Resets vote sum
+		if (Xi[FEATURES-1] == 1) {
+			if (j < CLAUSES / 2) {
+				(*tm).clause_output[j] = 0;
+			}
+		} else {
+			if (j >= CLAUSES / 2) {
+				(*tm).clause_output[j] = 0;
+			}
 		}
 	}
 }
@@ -156,7 +130,7 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 /* Get the state of a specific automaton, indexed by clause, feature, and automaton type (include/include negated). */
 int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, int feature)
 {
-	return (*tm).ta_state[clause][clause_component][feature];
+	return (*tm).ta_state[clause][0][clause_component][feature];
 }
 
 /*************************************************/
@@ -167,42 +141,25 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, i
 {
 	if ((*tm).clause_output[j] == 0 || (*tm).clause_component_output[j][k] == 0)	{
 		for (int l = 0; l < FEATURES - 1; l++) {
-			(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
+			(*tm).ta_state[j][0][k][l] -= ((*tm).ta_state[j][0][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
 
-			(*tm).ta_state[j][k][l + FEATURES] -= ((*tm).ta_state[j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
+			(*tm).ta_state[j][0][k][l + FEATURES] -= ((*tm).ta_state[j][0][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
 	} else {					
 		for (int l = 0; l < FEATURES - 1; l++) {
 			if (Xi[l] == 1) {
-				(*tm).ta_state[j][k][l] += ((*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+				(*tm).ta_state[j][0][k][l] += ((*tm).ta_state[j][0][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
-				(*tm).ta_state[j][k][l] -= ((*tm).ta_state[j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[j][0][k][l] -= ((*tm).ta_state[j][0][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 
 			if (Xi[l + FEATURES] == 1) {
-				(*tm).ta_state[j][k][l + FEATURES] += ((*tm).ta_state[j][k][l + FEATURES] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
+				(*tm).ta_state[j][0][k][l + FEATURES] += ((*tm).ta_state[j][0][k][l + FEATURES] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
-				(*tm).ta_state[j][k][l + FEATURES] -= ((*tm).ta_state[j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[j][0][k][l + FEATURES] -= ((*tm).ta_state[j][0][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 		}
 	}
-
-	// if ((*tm).clause_output[j] == 0) {
-	// 	(*tm).ta_state_layer_two[j][0] -= ((*tm).ta_state_layer_two[j][0] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));	
-	// 	(*tm).ta_state_layer_two[j][1] -= ((*tm).ta_state_layer_two[j][1] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));
-	// } else {
-	// 	if (Xi[FEATURES - 1] == 1) {
-	// 		(*tm).ta_state_layer_two[j][0] += ((*tm).ta_state_layer_two[j][0] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s) * (1.0 / CLAUSE_COMPONENTS);
-	// 	} else {				
-	// 		(*tm).ta_state_layer_two[j][0] -= ((*tm).ta_state_layer_two[j][0] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));
-	// 	}
-
-	// 	if (Xi[LITERALS - 1] == 1) {
-	// 		(*tm).ta_state_layer_two[j][1] += ((*tm).ta_state_layer_two[j][1] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s * (1.0 / CLAUSE_COMPONENTS));
-	// 	} else {				
-	// 		(*tm).ta_state_layer_two[j][1] -= ((*tm).ta_state_layer_two[j][1] > 1) && (1.0*rand()/RAND_MAX <= (1.0/s) * (1.0 / CLAUSE_COMPONENTS));
-	// 	}
-	// }
 }
 
 
@@ -215,21 +172,13 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, 
 
 	if ((*tm).clause_output[j] > 0 && (*tm).clause_component_output[j][k] == 1) {
 		for (int l = 0; l < (FEATURES - 1); l++) { 
-			action_include = action((*tm).ta_state[j][k][l]);
-			(*tm).ta_state[j][k][l] += (action_include == 0 && (*tm).ta_state[j][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
+			action_include = action((*tm).ta_state[j][0][k][l]);
+			(*tm).ta_state[j][0][k][l] += (action_include == 0 && (*tm).ta_state[j][0][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
 
-			action_include = action((*tm).ta_state[j][k][l + FEATURES]);
-			(*tm).ta_state[j][k][l + FEATURES] += (action_include == 0 && (*tm).ta_state[j][k][l + FEATURES] < NUMBER_OF_STATES*2) && (Xi[l + FEATURES] == 0);
+			action_include = action((*tm).ta_state[j][0][k][l + FEATURES]);
+			(*tm).ta_state[j][0][k][l + FEATURES] += (action_include == 0 && (*tm).ta_state[j][0][k][l + FEATURES] < NUMBER_OF_STATES*2) && (Xi[l + FEATURES] == 0);
 		}
 	}
-
-	// if ((*tm).clause_output[j] > 0) {		
-	// 	action_include = action((*tm).ta_state_layer_two[j][0]);
-	// 	(*tm).ta_state_layer_two[j][0] += (action_include == 0 && (*tm).ta_state_layer_two[j][0] < NUMBER_OF_STATES*2) && (Xi[FEATURES - 1] == 0) && rand() < 1.0 /CLAUSE_COMPONENTS;
-
-	// 	action_include = action((*tm).ta_state_layer_two[j][1]);
-	// 	(*tm).ta_state_layer_two[j][1] += (action_include == 0 && (*tm).ta_state_layer_two[j][1] < NUMBER_OF_STATES*2) && (Xi[LITERALS - 1] == 0) && rand() < 1.0 /CLAUSE_COMPONENTS;
-	// }
 }
 
 /******************************************/
