@@ -83,7 +83,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 			(*tm).clause_component_output[j][k] = 1; // One False literal makes the clause component False
-			for (int l = 0; l < FEATURES - 1; l++) {
+			for (int l = 0; l < FEATURES / 2; l++) {
 				action_include = action((*tm).ta_state[j][0][k][l]);
 				if ((action_include == 1 && Xi[l] == 0)) {
 					(*tm).clause_component_output[j][k] = 0;
@@ -100,15 +100,24 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 			(*tm).clause_output[j] += (*tm).clause_component_output[j][k]; // Add one vote her if clause component is True.
 		}
 
-		if (Xi[FEATURES-1] == 1) {
-			if (j < CLAUSES / 2) {
+		if (Xi[FEATURES-1] == 1 && Xi[FEATURES-2] == 1) {
+			if (j < 3 * CLAUSES / 4) {
+				(*tm).clause_output[j] = 0;
+			}
+		} else if (Xi[FEATURES-1] == 1 && Xi[FEATURES-2] == 0) {
+			if ((j >=  3 * CLAUSES / 4) || (j < 2 * CLAUSES / 4)) {
+				(*tm).clause_output[j] = 0;
+			}
+		} else if (Xi[FEATURES-1] == 0 && Xi[FEATURES-2] == 1) {
+			if ((j >=  2 * CLAUSES / 4) || (j <  CLAUSES / 4)) {
 				(*tm).clause_output[j] = 0;
 			}
 		} else {
-			if (j >= CLAUSES / 2) {
+			if (j >= CLAUSES / 4) {
 				(*tm).clause_output[j] = 0;
 			}
 		}
+
 	}
 }
 
@@ -140,13 +149,13 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int j, int k, float s)
 {
 	if ((*tm).clause_output[j] == 0 || (*tm).clause_component_output[j][k] == 0)	{
-		for (int l = 0; l < FEATURES - 1; l++) {
+		for (int l = 0; l < FEATURES / 2; l++) {
 			(*tm).ta_state[j][0][k][l] -= ((*tm).ta_state[j][0][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
 
 			(*tm).ta_state[j][0][k][l + FEATURES] -= ((*tm).ta_state[j][0][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
 	} else {					
-		for (int l = 0; l < FEATURES - 1; l++) {
+		for (int l = 0; l < FEATURES / 2; l++) {
 			if (Xi[l] == 1) {
 				(*tm).ta_state[j][0][k][l] += ((*tm).ta_state[j][0][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
@@ -171,7 +180,7 @@ static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int j, 
 	int action_include;
 
 	if ((*tm).clause_output[j] > 0 && (*tm).clause_component_output[j][k] == 1) {
-		for (int l = 0; l < (FEATURES - 1); l++) { 
+		for (int l = 0; l < (FEATURES / 2); l++) { 
 			action_include = action((*tm).ta_state[j][0][k][l]);
 			(*tm).ta_state[j][0][k][l] += (action_include == 0 && (*tm).ta_state[j][0][k][l] < NUMBER_OF_STATES*2) && (Xi[l] == 0);
 
