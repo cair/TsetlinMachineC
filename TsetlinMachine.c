@@ -50,7 +50,7 @@ struct TsetlinMachine *CreateTsetlinMachine()
 void tm_initialize(struct TsetlinMachine *tm)
 {
 	for (int i = 0; i < CLAUSES; i++) {
-		for (int j = 0; j < 4; j++) {
+		for (int j = 0; j < VARIABLES; j++) {
 			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
 				for (int l = 0; l < FEATURES; l++) {
 					if (1.0 * rand()/RAND_MAX <= 0.5) {
@@ -78,18 +78,18 @@ static inline int action(int state)
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
 	int action_include;
-	int local_clause_output[4];
+	int local_clause_output[VARIABLES];
 
 	for (int i = 0; i < CLAUSES; i++) {
 		(*tm).clause_output[i] = 1; // Here, we count how many times the rolled out clauses are True.
 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		
-		for (int j = 0; j < 2; j++) {
+		for (int j = 0; j < VARIABLES; j++) {
 			local_clause_output[j] = 0;
 			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 				(*tm).clause_component_output[i][j][k] = 1; // One False literal makes the clause component False
-				for (int l = j * (FEATURES / 2); l < (j + 1) * (FEATURES / 2); l++) {
+				for (int l = j * (FEATURES / VARIABLES); l < (j + 1) * (FEATURES / VARIABLES); l++) {
 					action_include = action((*tm).ta_state[i][j][k][l]);
 					if ((action_include == 1 && Xi[l] == 0)) {
 						(*tm).clause_component_output[i][j][k] = 0;
@@ -139,13 +139,13 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int i, int j, int k, float s)
 {
 	if ((*tm).clause_output[i] == 0 || (*tm).clause_component_output[i][j][k] == 0)	{
-		for (int l = (FEATURES / 2) * j; l < (FEATURES / 2) * (j + 1); l++) {
+		for (int l = (FEATURES / VARIABLES) * j; l < (FEATURES / VARIABLES) * (j + 1); l++) {
 			(*tm).ta_state[i][j][k][l] -= ((*tm).ta_state[i][j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
 
 			(*tm).ta_state[i][j][k][l + FEATURES] -= ((*tm).ta_state[i][j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
 	} else {					
-		for (int l = (FEATURES / 2) * j; l < (FEATURES / 2) * (j + 1); l++) {
+		for (int l = (FEATURES / VARIABLES) * j; l < (FEATURES / VARIABLES) * (j + 1); l++) {
 			if (Xi[l] == 1) {
 				(*tm).ta_state[i][j][k][l] += ((*tm).ta_state[i][j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
