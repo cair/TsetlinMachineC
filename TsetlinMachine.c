@@ -77,6 +77,7 @@ static inline int action(int state)
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
 	int action_include;
+	int local_clause_output[4];
 
 	for (int i = 0; i < CLAUSES; i++) {
 		(*tm).clause_output[i] = 1; // Here, we count how many times the rolled out clauses are True.
@@ -84,7 +85,7 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		
 		for (int j = 0; j < 2; j++) {
-			int local_clause_output = 0;
+			local_clause_output[j] = 0;
 			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
 				(*tm).clause_component_output[i][j][k] = 1; // One False literal makes the clause component False
 				for (int l = j * (FEATURES / 2); l < (j + 1) * (FEATURES / 2); l++) {
@@ -101,10 +102,10 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 					}
 				}
 
-				local_clause_output += (*tm).clause_component_output[i][j][k]; // Add one vote her if clause component is True.
+				local_clause_output[j] += (*tm).clause_component_output[i][j][k]; // Add one vote her if clause component is True.
 			}
 
-			(*tm).clause_output[i] *= local_clause_output;
+			(*tm).clause_output[i] *= local_clause_output[j];
 		}
 	}
 }
