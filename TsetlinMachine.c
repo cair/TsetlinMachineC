@@ -49,29 +49,16 @@ struct TsetlinMachine *CreateTsetlinMachine()
 
 void tm_initialize(struct TsetlinMachine *tm)
 {
-	for (int j = 0; j < CLAUSES; j++) {
+	for (int i = 0; i < CLAUSES; i++) {
+		for (int j = 0; j < 4; j++)
 		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
 			for (int l = 0; l < FEATURES; l++) {
 				if (1.0 * rand()/RAND_MAX <= 0.5) {
-					(*tm).ta_state[j][0][k][l] = NUMBER_OF_STATES;
-					(*tm).ta_state[j][0][k][l + FEATURES] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[i][j][k][l] = NUMBER_OF_STATES;
+					(*tm).ta_state[i][j][k][l + FEATURES] = NUMBER_OF_STATES + 1;
 				} else {
-					(*tm).ta_state[j][0][k][l] = NUMBER_OF_STATES + 1;
-					(*tm).ta_state[j][0][k][l + FEATURES] = NUMBER_OF_STATES;
-				}
-			}
-		}
-	}
-
-	for (int j = 0; j < CLAUSES; j++) {
-		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
-			for (int l = 0; l < FEATURES; l++) {
-				if (1.0 * rand()/RAND_MAX <= 0.5) {
-					(*tm).ta_state[j][1][k][l] = NUMBER_OF_STATES;
-					(*tm).ta_state[j][1][k][l + FEATURES] = NUMBER_OF_STATES + 1;
-				} else {
-					(*tm).ta_state[j][1][k][l] = NUMBER_OF_STATES + 1;
-					(*tm).ta_state[j][1][k][l + FEATURES] = NUMBER_OF_STATES;
+					(*tm).ta_state[i][j][k][l] = NUMBER_OF_STATES + 1;
+					(*tm).ta_state[i][j][k][l + FEATURES] = NUMBER_OF_STATES;
 				}
 			}
 		}
@@ -91,88 +78,34 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 {
 	int action_include;
 
-	for (int j = 0; j < CLAUSES; j++) {
-		(*tm).clause_output[j] = 0; // Here, we count how many times the rolled out clauses are True.
+	for (int i = 0; i < CLAUSES; i++) {
+		(*tm).clause_output[i] = 1; // Here, we count how many times the rolled out clauses are True.
 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		
-		int local_clause_output_1 = 0;
-		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-			(*tm).clause_component_output[j][0][k] = 1; // One False literal makes the clause component False
-			for (int l = 0; l < FEATURES / 2; l++) {
-				action_include = action((*tm).ta_state[j][0][k][l]);
-				if ((action_include == 1 && Xi[l] == 0)) {
-					(*tm).clause_component_output[j][0][k] = 0;
-					break;
+		for (int j = 0; j < 2; j++) {
+			int local_clause_output = 0;
+			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+				(*tm).clause_component_output[i][j][k] = 1; // One False literal makes the clause component False
+				for (int l = j * (FEATURES / 2); l < (j + 1) * (FEATURES / 2); l++) {
+					action_include = action((*tm).ta_state[i][j][k][l]);
+					if ((action_include == 1 && Xi[l] == 0)) {
+						(*tm).clause_component_output[i][j][k] = 0;
+						break;
+					}
+
+					action_include = action((*tm).ta_state[i][j][k][l + FEATURES]);
+					if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
+						(*tm).clause_component_output[i][j][k] = 0;
+						break;
+					}
 				}
 
-				action_include = action((*tm).ta_state[j][0][k][l + FEATURES]);
-				if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
-					(*tm).clause_component_output[j][0][k] = 0;
-					break;
-				}
+				local_clause_output += (*tm).clause_component_output[i][j][k]; // Add one vote her if clause component is True.
 			}
 
-			local_clause_output_1 += (*tm).clause_component_output[j][0][k]; // Add one vote her if clause component is True.
+			(*tm).clause_output[i] *= local_clause_output;
 		}
-
-		int local_clause_output_2 = 0;
-		for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-			(*tm).clause_component_output[j][1][k] = 1; // One False literal makes the clause component False
-			for (int l = FEATURES / 2; l < FEATURES; l++) {
-				action_include = action((*tm).ta_state[j][1][k][l]);
-				if ((action_include == 1 && Xi[l] == 0)) {
-					(*tm).clause_component_output[j][1][k] = 0;
-					break;
-				}
-
-				action_include = action((*tm).ta_state[j][1][k][l + FEATURES]);
-				if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
-					(*tm).clause_component_output[j][1][k] = 0;
-					break;
-				}
-			}
-
-			local_clause_output_2 += (*tm).clause_component_output[j][1][k]; // Add one vote her if clause component is True.
-		}
-
-		(*tm).clause_output[j] = local_clause_output_1 * local_clause_output_2;
-
-		// if (Xi[FEATURES-1] == 1 && Xi[FEATURES-2] == 1) {
-		// 	if (j < 3 * CLAUSES / 4) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else if (Xi[FEATURES-1] == 1 && Xi[FEATURES-2] == 0) {
-		// 	if ((j >=  3 * CLAUSES / 4) || (j < 2 * CLAUSES / 4)) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else if (Xi[FEATURES-1] == 0 && Xi[FEATURES-2] == 1) {
-		// 	if ((j >=  2 * CLAUSES / 4) || (j <  CLAUSES / 4)) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else {
-		// 	if (j >= CLAUSES / 4) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// }
-
-		// if (Xi[0] == 1 && Xi[1] == 1) {
-		// 	if (j < 3 * CLAUSES / 4) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else if (Xi[0] == 1 && Xi[1] == 0) {
-		// 	if ((j >=  3 * CLAUSES / 4) || (j < 2 * CLAUSES / 4)) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else if (Xi[0] == 0 && Xi[1] == 1) {
-		// 	if ((j >=  2 * CLAUSES / 4) || (j <  CLAUSES / 4)) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// } else {
-		// 	if (j >= CLAUSES / 4) {
-		// 		(*tm).clause_output[j] = 0;
-		// 	}
-		// }
 	}
 }
 
