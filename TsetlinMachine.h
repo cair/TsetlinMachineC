@@ -29,6 +29,7 @@ https://arxiv.org/abs/1804.01508
 #define FEATURES 12
 #define LITERALS (FEATURES*2)
 #define CLAUSES 8
+#define VARIABLES 2
 #define CLAUSE_COMPONENTS 10
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
@@ -37,13 +38,13 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine { 
-	int ta_state[CLAUSES][4][CLAUSE_COMPONENTS][LITERALS]; // The clause components, unique per clause (later we can introduce sharing)
+	int ta_state[CLAUSES][VARIABLES][CLAUSE_COMPONENTS][LITERALS]; // The clause components, unique per clause (later we can introduce sharing)
 
-	int clause_component_output[CLAUSES][4][CLAUSE_COMPONENTS]; // Here, we count how many times the rolled out clauses are True.
+	int clause_component_output[CLAUSES][VARIABLES][CLAUSE_COMPONENTS]; // Here, we count how many times the rolled out clauses are True.
 
 	int clause_output[CLAUSES]; // Here, we count how many times the rolled out clauses are True.
 
-	int feedback_to_components[CLAUSES][4][CLAUSE_COMPONENTS];
+	int feedback_to_components[CLAUSES][VARIABLES][CLAUSE_COMPONENTS];
 
 	int feedback_to_clauses[CLAUSES]; // Decides which clause to update, but the clause sum is calculated after roll out.
 };
