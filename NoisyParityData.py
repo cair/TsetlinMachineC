@@ -1,7 +1,7 @@
 import numpy as np
 
 
-noise = 0.25
+noise = 0.3
 number_of_features = 12
 number_of_variables = 3
 number_of_examples = 20000
@@ -15,7 +15,6 @@ for i in range(number_of_examples):
 
 	set_bit_count = 0
 	for j in range(number_of_variables):
-		print(j * number_of_features // number_of_variables, j * number_of_features // number_of_variables + 2, X_train[i, j * number_of_features // number_of_variables:j * number_of_features // number_of_variables + 2])
 		set_bit_count += X_train[i, j * number_of_features // number_of_variables:j * number_of_features // number_of_variables + 2].sum()
 	Y_train[i] = set_bit_count % 2
 
