@@ -29,7 +29,7 @@ https://arxiv.org/abs/1804.01508
 #define FEATURES 12
 #define LITERALS (FEATURES*2)
 #define CLAUSES 8
-#define VARIABLES 2
+#define VARIABLES 3
 #define CLAUSE_COMPONENTS 10
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0

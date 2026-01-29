@@ -1,9 +1,9 @@
 import numpy as np
 
 
-noise = 0.4
+noise = 0.2
 number_of_features = 12
-number_of_variables = 2
+number_of_variables = 3
 number_of_examples = 20000
 
 X_train = np.random.randint(2, size=(number_of_examples, number_of_features), dtype=np.uint32)
@@ -15,6 +15,7 @@ for i in range(number_of_examples):
 
 	set_bit_count = 0
 	for j in range(number_of_variables):
+		print(j * number_of_features // number_of_variables, j * number_of_features // number_of_variables + 2, X_train[i, j * number_of_features // number_of_variables:j * number_of_features // number_of_variables + 2])
 		set_bit_count += X_train[i, j * number_of_features // number_of_variables:j * number_of_features // number_of_variables + 2].sum()
 	Y_train[i] = set_bit_count % 2
 
