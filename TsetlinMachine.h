@@ -25,11 +25,11 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 150
-#define FEATURES 12
+#define THRESHOLD 6000
+#define FEATURES 8
 #define LITERALS (FEATURES*2)
-#define CLAUSES 8
-#define VARIABLES 3
+#define CLAUSES 32
+#define VARIABLES 4
 #define CLAUSE_COMPONENTS 10
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
@@ -48,7 +48,7 @@ struct TsetlinMachine {
 
 	int feedback_to_clauses[CLAUSES]; // Decides which clause to update, but the clause sum is calculated after roll out.
 };
-
+ 
 struct TsetlinMachine *CreateTsetlinMachine();
 
 void tm_initialize(struct TsetlinMachine *tm);

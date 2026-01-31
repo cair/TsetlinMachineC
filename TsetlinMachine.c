@@ -79,12 +79,15 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 {
 	int action_include;
 	int local_clause_output[VARIABLES];
+	int local_clause_output_lvl_2[2];
 
 	for (int i = 0; i < CLAUSES; i++) {
 		(*tm).clause_output[i] = 1; // Here, we count how many times the rolled out clauses are True.
 
 		// Go through the clause components, one needs to be True to make the first part of the clause True.
 		
+		local_clause_output_lvl_2[0] = 1;
+		local_clause_output_lvl_2[1] = 1;
 		for (int j = 0; j < VARIABLES; j++) {
 			local_clause_output[j] = 0;
 			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
@@ -106,8 +109,10 @@ static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], 
 				local_clause_output[j] += (*tm).clause_component_output[i][j][k]; // Add one vote her if clause component is True.
 			}
 
-			(*tm).clause_output[i] *= local_clause_output[j];
+			local_clause_output_lvl_2[j / 2] *= local_clause_output[j];
 		}
+
+		(*tm).clause_output[i] *= local_clause_output_lvl_2[0] * local_clause_output_lvl_2[1];
 	}
 }
 

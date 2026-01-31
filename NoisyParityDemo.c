@@ -69,18 +69,20 @@ int main(void)
 
 	struct MultiClassTsetlinMachine *mc_tsetlin_machine = CreateMultiClassTsetlinMachine();
 
-	float average = 0.0;
+	float accuracy_sum = 0.0;
 	for (int i = 0; i < 100; i++) {
 		mc_tm_initialize(mc_tsetlin_machine);
 		clock_t start_total = clock();
-		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 2000, 18.1);
+		mc_tm_fit(mc_tsetlin_machine, X_train, y_train, NUMBER_OF_EXAMPLES, 2000, 32.1);
 		clock_t end_total = clock();
 		double time_used = ((double) (end_total - start_total)) / CLOCKS_PER_SEC;
 
 		printf("EPOCH %d TIME: %f\n", i+1, time_used);
-		average += mc_tm_evaluate(mc_tsetlin_machine, X_test, y_test, NUMBER_OF_EXAMPLES);
+		float accuracy = mc_tm_evaluate(mc_tsetlin_machine, X_test, y_test, NUMBER_OF_EXAMPLES);
+		accuracy_sum += accuracy;
 
-		printf("Average accuracy: %f\n", average/(i+1));
+		printf("Accuracy: %f\n", accuracy);
+		printf("Average accuracy: %f\n", accuracy_sum/(i+1));
 	}
 
 	return 0;
