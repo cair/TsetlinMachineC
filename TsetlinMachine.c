@@ -163,15 +163,15 @@ int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, in
 
 static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int i, int j, int k, int l, int m, float s)
 {
-	int feature_index = j * INTERIOR_GROUPING_FACTOR * LEAF_GROUPING_FACTOR + l * LEAF_GROUPING_FACTOR;
-
 	if ((*tm).clause_output[clause] == 0 || (*tm).clause_component_output[i][j][k][l][m] == 0)	{
 		for (int n = feature_index; n < feature_index + LEAF_GROUPING_FACTOR; n++) {
 			(*tm).ta_state[i][j][k][l][m][n] -= ((*tm).ta_state[cla][j][k][l] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);	
 
 			(*tm).ta_state[i][j][k][l + FEATURES] -= ((*tm).ta_state[i][j][k][l + FEATURES] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);				
 		}
-	} else {					
+	} else {
+		int feature_index = j * INTERIOR_GROUPING_FACTOR * LEAF_GROUPING_FACTOR + l * LEAF_GROUPING_FACTOR;
+
 		for (int l = (FEATURES / VARIABLES) * j; l < (FEATURES / VARIABLES) * (j + 1); l++) {
 			if (Xi[l] == 1) {
 				(*tm).ta_state[i][j][k][l] += ((*tm).ta_state[i][j][k][l] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
