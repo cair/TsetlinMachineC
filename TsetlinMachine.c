@@ -50,15 +50,20 @@ struct TsetlinMachine *CreateTsetlinMachine()
 void tm_initialize(struct TsetlinMachine *tm)
 {
 	for (int i = 0; i < CLAUSES; i++) {
-		for (int j = 0; j < VARIABLES; j++) {
-			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {				
-				for (int l = 0; l < FEATURES; l++) {
-					if (1.0 * rand()/RAND_MAX <= 0.5) {
-						(*tm).ta_state[i][j][k][l] = NUMBER_OF_STATES;
-						(*tm).ta_state[i][j][k][l + FEATURES] = NUMBER_OF_STATES + 1;
-					} else {
-						(*tm).ta_state[i][j][k][l] = NUMBER_OF_STATES + 1;
-						(*tm).ta_state[i][j][k][l + FEATURES] = NUMBER_OF_STATES;
+		for (int j = 0; j < ROOT_GROUPING_FACTOR; j++) {
+			for (int k = 0; k < INTERIOR_ALTERNATIVES; k++) {	
+				for (int l = 0; l < INTERIOR_GROUPING_FACTOR; l++) {
+					for (int m = 0; m < LEAF_ALTERNATIVES; m++) {
+						for (int n = 0; n < LEAF_GROUPING_FACTOR; n++) {
+
+							if (1.0 * rand()/RAND_MAX <= 0.5) {
+								(*tm).ta_state[i][j][k][l][m][n] = NUMBER_OF_STATES;
+								(*tm).ta_state[i][j][k][l][m][n + LEAF_GROUPING_FACTOR] = NUMBER_OF_STATES + 1;
+							} else {
+								(*tm).ta_state[i][j][k][l][m][n] = NUMBER_OF_STATES + 1;
+								(*tm).ta_state[i][j][k][l][m][n + LEAF_GROUPING_FACTOR] = NUMBER_OF_STATES;
+							}
+						}
 					}
 				}
 			}
@@ -78,41 +83,56 @@ static inline int action(int state)
 static inline void calculate_clause_output(struct TsetlinMachine *tm, int Xi[], int predict)
 {
 	int action_include;
-	int local_clause_output[VARIABLES];
-	int local_clause_output_lvl_2[2];
 
 	for (int i = 0; i < CLAUSES; i++) {
-		(*tm).clause_output[i] = 1; // Here, we count how many times the rolled out clauses are True.
+		(*tm).clause_output[i] = 1;
 
-		// Go through the clause components, one needs to be True to make the first part of the clause True.
-		
-		local_clause_output_lvl_2[0] = 1;
-		local_clause_output_lvl_2[1] = 1;
-		for (int j = 0; j < VARIABLES; j++) {
-			local_clause_output[j] = 0;
-			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-				(*tm).clause_component_output[i][j][k] = 1; // One False literal makes the clause component False
-				for (int l = j * (FEATURES / VARIABLES); l < (j + 1) * (FEATURES / VARIABLES); l++) {
-					action_include = action((*tm).ta_state[i][j][k][l]);
-					if ((action_include == 1 && Xi[l] == 0)) {
-						(*tm).clause_component_output[i][j][k] = 0;
-						break;
+		for (int j = 0; j < ROOT_GROUPING_FACTOR; j++) {
+			// Evaluates interior subtrees, adding up votes from each
+			(*tm).interior_vote_sums[i][j] = 0;
+
+			for (int k = 0; k < INTERIOR_ALTERNATIVES; k++) {
+				// Multiplies vote sums from multiple leaf groups (AND-combination)
+
+				(*tm).interior_vote_products[i][j][k] = 1; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
+
+				for (int l = 0; l < INTERIOR_GROUPING_FACTOR; l++) {
+					// Evaluates leaf alternatives (clause components), adding up the votes
+					(*tm).leaf_vote_sum[i][j][k][l] = 0; // Stores how many class votes you get per feature group (vote summation over leaf alternatives)
+
+					for (int m = 0; m < LEAF_ALTERNATIVES; m++) {
+						// Evaluates clause component on its feature group
+						for (int n = 0; n < LEAF_GROUPING_FACTOR; n++) {
+							int feature = j * INTERIOR_GROUPING_FACTOR * LEAF_GROUPING_FACTOR + l * LEAF_GROUPING_FACTOR + n;
+
+							action_include = action((*tm).ta_state[i][j][k][l][m][n]);
+							if ((action_include == 1 && Xi[feature] == 0)) {
+								(*tm).clause_component_output[i][j][k][l][m] = 0;
+								break;
+							}
+
+							action_include = action((*tm).ta_state[i][j][k][l][m][n + LEAF_GROUPING_FACTOR]);
+							if ((action_include == 1 && Xi[feature + FEATURES] == 0)) {
+								(*tm).clause_component_output[i][j][k][l][m] = 0;
+								break;
+							}
+						}
+
+						// Adds up clause component votes (OR-alternatives)
+						(*tm).leaf_vote_sum[i][j][k][l] += (*tm).clause_component_output[i][j][k][l][m];
 					}
 
-					action_include = action((*tm).ta_state[i][j][k][l + FEATURES]);
-					if ((action_include == 1 && Xi[l + FEATURES] == 0)) {
-						(*tm).clause_component_output[i][j][k] = 0;
-						break;
-					}
+					// Multiplies leaf vote sums (AND-grouping). 
+					(*tm).interior_vote_products[i][j][k] *= (*tm).leaf_vote_sum[i][j][k][l];
 				}
 
-				local_clause_output[j] += (*tm).clause_component_output[i][j][k]; // Add one vote her if clause component is True.
+				// Adds up interior leaf vote sum products (OR-alternatives)
+				(*tm).interior_vote_sums[i][j] += (*tm).interior_vote_products[i][j][k];
 			}
 
-			local_clause_output_lvl_2[j / 2] *= local_clause_output[j];
+			// Multiplies interior vote sums (AND-grouping). 
+			(*tm).clause_output[i] *= (*tm).interior_vote_sums[i][j];
 		}
-
-		(*tm).clause_output[i] *= local_clause_output_lvl_2[0] * local_clause_output_lvl_2[1];
 	}
 }
 
