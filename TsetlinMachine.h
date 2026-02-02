@@ -38,7 +38,6 @@ https://arxiv.org/abs/1804.01508
 #define FEATURES (ROOT_GROUPING_FACTOR * INTERIOR_GROUPING_FACTOR * LEAF_GROUPING_FACTOR)
 #define LITERALS (FEATURES*2)
 
-
 #define NUMBER_OF_STATES 100
 #define BOOST_TRUE_POSITIVE_FEEDBACK 0
 
@@ -50,7 +49,9 @@ struct TsetlinMachine {
 	int leaf_vote_sum[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR]; // Stores how many class votes you get per feature group (vote summation over leaf alternatives)
 	int interior_vote_products[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES]; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
 	int interior_vote_sums[CLAUSES][ROOT_GROUPING_FACTOR]; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
+
 	int clause_output[CLAUSES]; // Stores product of interior alternative vote sums
+	int clause_component_output[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR][LEAF_ALTERNATIVES];
 
 	int feedback_to_components[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR][LEAF_ALTERNATIVES];
 
