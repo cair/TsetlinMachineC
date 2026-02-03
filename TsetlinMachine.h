@@ -26,7 +26,7 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 6000
-#define LEAF_FACTORS 2
+#define LEAF_FACTORS 3
 #define INTERIOR_FACTORS 2
 #define ROOT_FACTORS 2
 #define LEAF_ALTERNATIVES 10
