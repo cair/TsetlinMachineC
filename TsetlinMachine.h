@@ -66,4 +66,4 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s);
 
 int tm_score(struct TsetlinMachine *tm, int Xi[]);
 
-int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, int feature);
+int tm_get_state(struct TsetlinMachine *tm, int clause, int root_factor, int interior_alternative, int interior_factor, int leaf_alternative, int leaf_factor);

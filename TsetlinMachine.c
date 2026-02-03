@@ -152,9 +152,9 @@ static inline int sum_up_class_votes(struct TsetlinMachine *tm)
 }
 
 /* Get the state of a specific automaton, indexed by clause, feature, and automaton type (include/include negated). */
-int tm_get_state(struct TsetlinMachine *tm, int clause, int clause_component, int feature)
+int tm_get_state(struct TsetlinMachine *tm, int clause, int root_factor, int interior_alternative, int interior_factor, int leaf_alternative, int leaf_factor)
 {
-	return (*tm).ta_state[clause][0][clause_component][feature];
+	return (*tm).ta_state[clause][root_factor][interior_alternative][interior_factor][leaf_alternative][leaf_factor];
 }
 
 /*************************************************/
@@ -176,7 +176,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int i, i
 			if (Xi[feature_index + n] == 1) {
 				(*tm).ta_state[i][j][k][l][m][n] += ((*tm).ta_state[i][j][k][l][m][n] < NUMBER_OF_STATES*2) && (BOOST_TRUE_POSITIVE_FEEDBACK == 1 || 1.0*rand()/RAND_MAX <= (s-1)/s);
 			} else {				
-				(*tm).ta_state[i][j][k][l][m][n] -= ((*tm).[i][j][k][l][m][n] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
+				(*tm).ta_state[i][j][k][l][m][n] -= ((*tm).ta_state[i][j][k][l][m][n] > 1) && (1.0*rand()/RAND_MAX <= 1.0/s);
 			}
 
 			if (Xi[feature_index + n + FEATURES] == 1) {
@@ -238,9 +238,13 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 	for (int i = 0; i < CLAUSES; i++) {
 		int sign = 1 - 2 * (i & 1);
 
-		for (int j = 0; j < VARIABLES; j++) {
-			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
-				(*tm).feedback_to_components[i][j][k] = sign*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+		for (int j = 0; j < ROOT_GROUPING_FACTOR; j++) {
+			for (int k = 0; k < INTERIOR_ALTERNATIVES; k++) {
+				for (int l = 0; l < INTERIOR_GROUPING_FACTOR; l++) {
+					for (int m = 0; m < LEAF_ALTERNATIVES; m++) {
+						(*tm).feedback_to_components[i][j][k][l][m] = sign*(2*target-1)*(1.0*rand()/RAND_MAX <= (1.0/(THRESHOLD*2))*(THRESHOLD + (1 - 2*target)*class_sum));
+					}
+				}
 			}
 		}
 	}
