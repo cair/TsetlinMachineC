@@ -227,11 +227,12 @@ void tm_update(struct TsetlinMachine *tm, int Xi[], int target, float s) {
 
 	for (int i = 0; i < CLAUSES; i++) {
 		for (int j = 0; j < VARIABLES; j++) {
-			int k = rand() % CLAUSE_COMPONENTS;
-			if ((*tm).feedback_to_components[i][j][k] > 0) {
-				type_i_feedback(tm, Xi, i, j, k, s);
-			} else if ((*tm).feedback_to_components[i][j][k] < 0) {
-				type_ii_feedback(tm, Xi, i, j, k);
+			for (int k = 0; k < CLAUSE_COMPONENTS; k++) {
+				if ((*tm).feedback_to_components[i][j][k] > 0) {
+					type_i_feedback(tm, Xi, i, j, k, s);
+				} else if ((*tm).feedback_to_components[i][j][k] < 0) {
+					type_ii_feedback(tm, Xi, i, j, k);
+				}
 			}
 		}
 	}
