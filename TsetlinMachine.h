@@ -26,16 +26,16 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 6000
-#define LEAF_GROUPING_FACTOR 2
-#define INTERIOR_GROUPING_FACTOR 2
-#define ROOT_GROUPING_FACTOR 2
+#define LEAF_FACTORS 2
+#define INTERIOR_FACTORS 2
+#define ROOT_FACTORS 2
 #define LEAF_ALTERNATIVES 10
 #define INTERIOR_ALTERNATIVES 5
 #define CLAUSES 32
 
-#define LITERALS_PER_GROUP (LEAF_GROUPING_FACTOR * 2)
+#define LITERALS_PER_GROUP (LEAF_FACTORS * 2)
 
-#define FEATURES (ROOT_GROUPING_FACTOR * INTERIOR_GROUPING_FACTOR * LEAF_GROUPING_FACTOR)
+#define FEATURES (ROOT_FACTORS * INTERIOR_FACTORS * LEAF_FACTORS)
 #define LITERALS (FEATURES*2)
 
 #define NUMBER_OF_STATES 100
@@ -45,15 +45,15 @@ https://arxiv.org/abs/1804.01508
 #define UPDATE 0
 
 struct TsetlinMachine {
-	int ta_state[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR][LEAF_ALTERNATIVES][LITERALS_PER_GROUP]; // The clause components, unique per clause (later we can introduce sharing)
-	int leaf_vote_sum[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR]; // Stores how many class votes you get per feature group (vote summation over leaf alternatives)
-	int interior_vote_products[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES]; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
-	int interior_vote_sums[CLAUSES][ROOT_GROUPING_FACTOR]; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
+	int ta_state[CLAUSES][ROOT_FACTORS][INTERIOR_ALTERNATIVES][INTERIOR_FACTORS][LEAF_ALTERNATIVES][LITERALS_PER_GROUP]; // The clause components, unique per clause (later we can introduce sharing)
+	int leaf_vote_sum[CLAUSES][ROOT_FACTORS][INTERIOR_ALTERNATIVES][INTERIOR_FACTORS]; // Stores how many class votes you get per feature group (vote summation over leaf alternatives)
+	int interior_vote_products[CLAUSES][ROOT_FACTORS][INTERIOR_ALTERNATIVES]; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
+	int interior_vote_sums[CLAUSES][ROOT_FACTORS]; // Stores how many class votes you get per interior alternative (product of leaf vote sums)
 
 	int clause_output[CLAUSES]; // Stores product of interior alternative vote sums
-	int clause_component_output[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR][LEAF_ALTERNATIVES];
+	int clause_component_output[CLAUSES][ROOT_FACTORS][INTERIOR_ALTERNATIVES][INTERIOR_FACTORS][LEAF_ALTERNATIVES];
 
-	int feedback_to_components[CLAUSES][ROOT_GROUPING_FACTOR][INTERIOR_ALTERNATIVES][INTERIOR_GROUPING_FACTOR][LEAF_ALTERNATIVES];
+	int feedback_to_components[CLAUSES][ROOT_FACTORS][INTERIOR_ALTERNATIVES][INTERIOR_FACTORS][LEAF_ALTERNATIVES];
 
 	int feedback_to_clauses[CLAUSES]; // Decides which clause to update, but the clause sum is calculated after roll out.
 };
