@@ -26,7 +26,7 @@ https://arxiv.org/abs/1804.01508
 */
 
 #define THRESHOLD 6000
-#define FEATURES 8
+#define FEATURES 12
 #define LITERALS (FEATURES*2)
 #define CLAUSES 32
 #define VARIABLES 4
