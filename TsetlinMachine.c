@@ -193,7 +193,7 @@ static inline void type_i_feedback(struct TsetlinMachine *tm, int Xi[], int i, i
 /*** Type II Feedback (Combats False Positives) ***/
 /**************************************************/
 
-static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int i, int j, int k) {
+static inline void type_ii_feedback(struct TsetlinMachine *tm, int Xi[], int i, int j, int k, int l, int m) {
 	int action_include;
 
 	if ((*tm).clause_output[i] > 0 && (*tm).interior_vote_products[i][j][k] > 0 && (*tm).clause_component_output[i][j][k][l][m] == 1) {
