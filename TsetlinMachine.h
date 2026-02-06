@@ -25,13 +25,13 @@ https://arxiv.org/abs/1804.01508
 
 */
 
-#define THRESHOLD 6000
+#define THRESHOLD 3000
 #define LEAF_FACTORS 3
 #define INTERIOR_FACTORS 2
 #define ROOT_FACTORS 2
 #define LEAF_ALTERNATIVES 10
 #define INTERIOR_ALTERNATIVES 2
-#define CLAUSES 32
+#define CLAUSES 16
 
 #define LITERALS_PER_GROUP (LEAF_FACTORS * 2)
 
